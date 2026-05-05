@@ -1,6 +1,8 @@
 .PHONY: postgres postgres-stop postgres-clean
 
 DATA=./data
+BUN=~/.bun/bin/bun
+BACKEND=backend
 
 $(DATA):
 	mkdir -p $(DATA)
@@ -24,3 +26,8 @@ re: reset up
 	sleep 2
 	make -sC . seed
 
+$(BUN):
+	curl -fsSL https://bun.com/install | bash
+
+start:
+	cd $(BACKEND) && npm run dev
