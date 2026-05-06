@@ -1,23 +1,23 @@
-## Auth
+## User
 
-POST   /auth/register
-POST   /auth/login
-POST   /auth/logout
-POST   /auth/verify-email
-POST   /auth/forgot-password
-POST   /auth/reset-password
-
-## User/Profile
-
+POST   /user/register
+POST   /user/login
+POST   /user/logout
+POST   /user/verify-email
+POST   /user/forgot-password
+POST   /user/reset-password
 GET    /me
 PUT    /me
+
+## Profile
+
 GET    /users/:id
 
 ## Pictures
 
 POST   /pictures
 DELETE /pictures/:id
-PUT    /pictures/:id/set-profile
+PUT    /pictures/:id
 
 ## Tags
 
@@ -27,8 +27,8 @@ POST   /me/tags
 
 ## Likes
 
-POST   /users/:id/like
-DELETE /users/:id/like
+POST   /like/:id
+DELETE /like/:id
 GET    /me/likes
 GET    /me/liked-by
 GET    /me/matches
@@ -47,15 +47,15 @@ GET /suggestions?sort=age|distance|fame|tags
 
 ## Block / Report
 
-POST /users/:id/block
-DELETE /users/:id/block
-POST /users/:id/report
+POST /block/:id
+DELETE /block/:id
+POST /report/:id
 
 ## Chat
 
 GET /conversations
-GET /messages/:userId
-POST /messages/:userId
+GET /messages/:id
+POST /messages/:id
 
 ## WebSocket
 

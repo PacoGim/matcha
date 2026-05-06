@@ -29,5 +29,7 @@ re: reset up
 $(BUN):
 	curl -fsSL https://bun.com/install | bash
 
-start:
+
+
+start: $(BUN)
 	cd $(BACKEND) && npm run dev
