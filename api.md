@@ -6,12 +6,12 @@ POST   /user/logout
 POST   /user/verify-email
 POST   /user/forgot-password
 POST   /user/reset-password
-GET    /me
-PUT    /me
+GET    /user
+PUT    /user
 
 ## Profile
 
-GET    /users/:id
+GET    /profile/:id
 
 ## Pictures
 
