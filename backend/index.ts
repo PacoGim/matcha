@@ -2,29 +2,21 @@ import express from "express"
 import cors from "cors"
 import path from "path"
 
+import db from "./Database/db"
 
 const app = express()
+db.initPool()
 const PORT = 3000
+const HOST = "10.171.62.221"
+const pool = db.getPool()
 
 const __dirname = path.resolve()
 
 app.use(cors({
-    origin: "http://localhost:3001"
+    origin: `http://${HOST}:3001`
 }))
 
 app.use(express.static(path.join(__dirname, "../frontend/build")))
-
-// fetch database
-import pg from "pg"
-const { Pool } = pg
-
-const pool = new Pool({
-    host: "localhost",
-    port: 5432,
-    user: "matcha_user",
-    password: "matcha_password",
-    database: "matcha_db",
-})
 
 app.get("/users", async (req, res) => {
     try {
