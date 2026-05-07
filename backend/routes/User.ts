@@ -1,11 +1,25 @@
 import {Router} from "express"
 import db from "../database/db"
 import {hash, compare} from "bcrypt"
+import "dotenv/config"
+import crypto from "crypto"
+import jwt from "jsonwebtoken"
 const userRoute = Router()
+
+import { authenticateToken, AuthRequest } from "../middleware/auth"
+import nodemailer from "nodemailer"
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.GMAIL_MAIL,
+        pass: process.env.GMAIL_APP_PWD
+    }
+})
 
 userRoute.get("/users", async (req, res) => {
     try {
-        console.log("userRoute", req)
+        // console.log("userRoute", req)
         const result = await db.getPool().query("SELECT * FROM users;")
         res.json(result.rows)
     } catch (err) {
@@ -14,12 +28,73 @@ userRoute.get("/users", async (req, res) => {
     }
 })
 
+userRoute.post("/user/check-email-token", async (req, res) => {
+    try {
+        const { token } = req.body
+        
+        if (!token) {
+            return res.status(400).json({ error: "Token required" })
+        }
+
+        const result = await db.getPool().query(
+            "SELECT user_id, expires_at FROM email_verifications WHERE token = $1;",
+            [token]
+        )
+
+        if (!result.rows.length) {
+            return res.status(401).json({ error: "Invalid token" })
+        }
+
+        const { user_id, expires_at } = result.rows[0]
+
+        if (new Date() > new Date(expires_at)) {
+            return res.status(401).json({ error: "Token expired" })
+        }
+
+        // Update user as verified
+        await db.getPool().query(
+            "UPDATE users SET is_verified = true WHERE id = $1;",
+            [user_id]
+        )
+
+        // Delete the token
+        await db.getPool().query(
+            "DELETE FROM email_verifications WHERE token = $1;",
+            [token]
+        )
+
+        res.json({ message: "Email verified successfully" })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Server error" })
+    }
+})
+
 userRoute.post("/user/register", async (req, res) => {
     try {
         const { email, username, password, first_name, last_name } = req.body
         const hashedPassword = await hash(password, 10)
-        console.log("userRegister", req.body, hashedPassword)
+        // console.log("userRegister", req.body, hashedPassword)
         const result = await db.getPool().query("INSERT INTO users (email, username, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4, $5) RETURNING id;", [email, username, hashedPassword, first_name, last_name])
+        
+        // Generate verification token
+        const verificationToken = crypto.randomBytes(32).toString('hex')
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+        
+        await db.getPool().query(
+            "INSERT INTO email_verifications (user_id, token, expires_at) VALUES ($1, $2, $3);",
+            [result.rows[0].id, verificationToken, expiresAt]
+        )
+        
+        const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`
+        
+        const emailResponse = await transporter.sendMail({
+            from: process.env.GMAIL_MAIL,
+            to: email,
+            subject: 'Verify your email',
+            html: `<p>Welcome to Matcha!</p><p>Please click the link below to verify your email and activate your account:</p><a href="${verificationLink}">Verify Email</a><p>This link will expire in 24 hours.</p>`
+        });
+        // console.log("emailResponse",emailResponse)
         res.json({ userId: result.rows[0].id })
     } catch (err) {
         console.error(err)
@@ -31,22 +106,82 @@ userRoute.post("/user/login", async (req, res) => {
     try {
         const { email, password } = req.body
 
-        const result = await db.getPool().query("SELECT password_hash FROM users WHERE email=$1;", [email])
+        const result = await db.getPool().query("SELECT id, email, username, password_hash, is_verified FROM users WHERE email=$1;", [email])
 
         if (!result.rows.length) {
             return res.status(401).json({ error: "Invalid credentials" })
         }
 
-        const isMatch = await compare(password, result.rows[0].password_hash)
+        const user = result.rows[0]
+
+        if (!user.is_verified) {
+            return res.status(401).json({ error: "Please verify your email before logging in" })
+        }
+
+        const isMatch = await compare(password, user.password_hash)
 
         if (!isMatch) {
             return res.status(401).json({ error: "Invalid credentials" })
         }
 
-        res.json({ message: "Login successful" })
+        // Generate JWT token
+        const token = jwt.sign(
+            {
+                id: user.id,
+                email: user.email,
+                username: user.username
+            },
+            process.env.JWT_SECRET || 'your-secret-key',
+            { expiresIn: '24h' }
+        )
+
+        res.json({
+            message: "Login successful",
+            token: token,
+            user: {
+                id: user.id,
+                email: user.email,
+                username: user.username
+            }
+        })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "DB error" })
+        res.status(500).json({ error: "Server error" })
+    }
+})
+
+userRoute.post("/user/logout", async (req, res) => {
+    try {
+        // Pour JWT, le logout côté serveur est généralement géré côté client
+        // en supprimant le token. Ici on peut ajouter une logique de blacklist si nécessaire
+        res.json({ message: "Logout successful" })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Server error" })
+    }
+})
+
+userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+        const userId = req.user?.id
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" })
+        }
+
+        const result = await db.getPool().query(
+            "SELECT id, email, username, first_name, last_name, is_verified, created_at FROM users WHERE id=$1;",
+            [userId]
+        )
+
+        if (!result.rows.length) {
+            return res.status(404).json({ error: "User not found" })
+        }
+
+        res.json({ user: result.rows[0] })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Server error" })
     }
 })
 

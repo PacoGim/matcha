@@ -3,7 +3,7 @@
 POST   /user/register
 POST   /user/login
 POST   /user/logout
-POST   /user/verify-email
+POST   /user/check-email
 POST   /user/forgot-password
 POST   /user/reset-password
 GET    /user

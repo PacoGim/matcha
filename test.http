@@ -8,8 +8,8 @@ POST http://10.171.62.221:3000/user/register
 Content-Type: application/json
 
 {
-    "email": "email@example.com",
-    "username": "john_doe",
+    "email": "hired79133@cadinr.com",
+    "username": "hired79133",
     "password": "password123",
     "first_name": "John",
     "last_name": "Doe"
@@ -20,6 +20,6 @@ POST http://10.171.62.221:3000/user/login
 Content-Type: application/json
 
 {
-    "email": "email@example.com",
+    "email": "tipton.bakary@forliion.com",
     "password": "password123"
 }

@@ -1,28 +1,33 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import UsersList from './Users';
+import Home from './pages/Home/Home';
+import About from './pages/About/About';
+import Register from './pages/Register/Register';
+import CheckEmail from './pages/CheckEmail/CheckEmail';
+import Login from './pages/Login/Login';
+import Profile from './pages/Profile/Profile';
+import NotFound from './pages/NotFound/NotFound';
+import { AuthProvider } from './contexts/AuthContext';
+
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 function App() {
-  return (
-    <div className="App">
-      <UsersList/>
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          alert au google oups
-        </a>
-      </header>
-    </div>
-  );
+    return (
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/verify-email" element={<CheckEmail />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
+    );
 }
 
 export default App;

@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
 import path from "path"
+import "dotenv/config"
 
 import db from "./database/db"
 import userRoute from "./routes/User"
@@ -16,7 +17,9 @@ const __dirname = path.resolve()
 app.use(express.json())
 
 app.use(cors({
-    origin: `http://${HOST}:3001`
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
 app.use("/", userRoute)
