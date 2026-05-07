@@ -12,6 +12,7 @@ import jwt from "jsonwebtoken"
 const userRoute = Router()
 
 import { authenticateToken, AuthRequest } from "../middleware/auth"
+import { validateUsername } from "../../frontend/src/validators/usernameValidator"
 import nodemailer from "nodemailer"
 
 const transporter = nodemailer.createTransport({
@@ -78,6 +79,16 @@ userRoute.post("/user/check-email-token", async (req, res) => {
 userRoute.post("/user/register", async (req, res) => {
     try {
         const { email, username, password, first_name, last_name } = req.body
+
+        // Validate username
+        const usernameError = validateUsername(username)
+        if (usernameError) {
+            return res.status(400).json({ 
+                error: usernameError.message,
+                field: usernameError.field 
+            })
+        }
+
         const hashedPassword = await hash(password, 10)
         // console.log("userRegister", req.body, hashedPassword)
         const result = await db.getPool().query("INSERT INTO users (email, username, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4, $5) RETURNING id;", [email, username, hashedPassword, first_name, last_name])
@@ -107,7 +118,27 @@ userRoute.post("/user/register", async (req, res) => {
         })
 
     } catch (err) {
-        console.error("user.ts ligne 105", err)
+        console.error("user.ts registration error", err)
+        
+        // Check for database constraint errors
+        if (err instanceof Error) {
+            const errorMessage = err.message.toLowerCase()
+            
+            if (errorMessage.includes('username') && errorMessage.includes('unique')) {
+                return res.status(400).json({ 
+                    error: 'Username already taken',
+                    field: 'username'
+                })
+            }
+            
+            if (errorMessage.includes('email') && errorMessage.includes('unique')) {
+                return res.status(400).json({ 
+                    error: 'Email already registered',
+                    field: 'email'
+                })
+            }
+        }
+        
         res.status(500).json({ error: "Try again later 111" })
     }
 })

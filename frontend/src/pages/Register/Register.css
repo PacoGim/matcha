@@ -88,3 +88,18 @@ button:disabled {
     margin-bottom: 1.5rem;
     border: 1px solid #f5c6cb;
 }
+
+.field-error {
+    display: block;
+    color: #721c24;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.field-help {
+    display: block;
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+}

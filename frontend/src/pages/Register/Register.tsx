@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './Register.css';
 import Navbar from '../../components/Navbar';
+import { validateUsername, getValidationRulesDescription } from '../../validators/usernameValidator';
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ export default function Register() {
     });
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,16 +22,32 @@ export default function Register() {
             ...prev,
             [name]: value
         }));
+        
+        // Clear field error when user starts typing
+        if (fieldErrors[name]) {
+            setFieldErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
         setMessage('');
+        setFieldErrors({});
         setLoading(true);
 
+        const usernameError = validateUsername(formData.username);
+        if (usernameError) {
+            setFieldErrors({ username: usernameError.message });
+            setLoading(false);
+            return;
+        }
+
         try {
-            const endpoint_register = `${window.location.origin}/user/register`
+            const endpoint_register = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/register`
             const response = await fetch(endpoint_register, {
                 method: 'POST',
                 headers: {
@@ -41,7 +59,13 @@ export default function Register() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Registration failed');
+                // Handle field-specific errors from backend
+                if (data.field) {
+                    setFieldErrors({ [data.field]: data.error });
+                } else {
+                    setError(data.error || 'Registration failed');
+                }
+                return;
             }
 
             setMessage('Registration successful! Check your email to verify your account.');
@@ -78,6 +102,7 @@ export default function Register() {
                                 onChange={handleChange}
                                 required
                             />
+                            {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
                         </div>
 
                         <div className="form-group">
@@ -90,6 +115,8 @@ export default function Register() {
                                 onChange={handleChange}
                                 required
                             />
+                            {fieldErrors.username && <span className="field-error">{fieldErrors.username}</span>}
+                            <span className="field-help">{getValidationRulesDescription()}</span>
                         </div>
 
                         <div className="form-group">
