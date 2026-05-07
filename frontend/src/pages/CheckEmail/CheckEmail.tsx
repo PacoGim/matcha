@@ -21,7 +21,8 @@ export default function CheckEmail() {
             }
 
             try {
-                const response = await fetch('http://10.171.62.221:3000/user/check-email-token', {
+                const endpoint_check_email = `${window.location.origin}/user/check-email-token`
+                const response = await fetch(endpoint_check_email, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

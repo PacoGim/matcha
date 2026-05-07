@@ -19,8 +19,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "bash -lc 'set -a && source ../.env && set +a && react-scripts start'",
+    "build": "bash -lc 'set -a && source ../.env && set +a && react-scripts build'",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

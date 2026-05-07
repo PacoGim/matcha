@@ -30,7 +30,9 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://10.171.62.221:3000/user/login', {
+            
+            const endpoint_login = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/login`
+            const response = await fetch(endpoint_login, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

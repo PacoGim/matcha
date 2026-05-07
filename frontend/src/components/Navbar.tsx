@@ -10,7 +10,8 @@ function Navbar() {
 
     const handleLogout = async () => {
         try {
-            await fetch('http://10.171.62.221:3000/user/logout', {
+            const endpoint_logout = `${window.location.origin}/user/logout`;
+            await fetch(endpoint_logout, {
                 method: 'POST',
                 credentials: 'include',
             });

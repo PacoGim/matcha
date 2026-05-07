@@ -24,7 +24,8 @@ export default function Profile() {
             }
 
             try {
-                const response = await fetch('http://10.171.62.221:3000/user/profile', {
+                const endpoint_profile = `${window.location.origin}/user/profile`
+                const response = await fetch(endpoint_profile, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {

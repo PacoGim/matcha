@@ -29,7 +29,8 @@ export default function Register() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://10.171.62.221:3000/user/register', {
+            const endpoint_register = `${window.location.origin}/user/register`
+            const response = await fetch(endpoint_register, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

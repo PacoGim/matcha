@@ -87,7 +87,7 @@ userRoute.post("/user/register", async (req, res) => {
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
 
-        const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`
+        const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`
 
         transporter.sendMail({
             from: process.env.GMAIL_MAIL,

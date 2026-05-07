@@ -1,6 +1,9 @@
 .env
+.env.production
+.env.development
 node_modules
 venv
 data
 frontend/build
 .vscode
+ssl/
