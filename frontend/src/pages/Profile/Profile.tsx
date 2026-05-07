@@ -4,12 +4,10 @@ import Navbar from '../../components/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface UserProfile {
-    id: string;
     email: string;
     username: string;
     first_name: string;
     last_name: string;
-    is_verified: boolean;
     created_at: string;
 }
 
@@ -17,21 +15,19 @@ export default function Profile() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const { token } = useAuth();
+    const { isInitializing } = useAuth();
 
     useEffect(() => {
         const fetchProfile = async () => {
-            if (!token) {
-                setError('No authentication token');
-                setLoading(false);
+            if (isInitializing) {
                 return;
             }
 
             try {
                 const response = await fetch('http://10.171.62.221:3000/user/profile', {
                     method: 'GET',
+                    credentials: 'include',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
                 });
@@ -51,7 +47,7 @@ export default function Profile() {
         };
 
         fetchProfile();
-    }, [token]);
+    }, [isInitializing]);
 
     if (loading) {
         return (
@@ -98,12 +94,6 @@ export default function Profile() {
                         <div className="profile-field">
                             <label>Last Name:</label>
                             <span>{profile.last_name}</span>
-                        </div>
-                        <div className="profile-field">
-                            <label>Verified:</label>
-                            <span className={profile.is_verified ? 'verified' : 'unverified'}>
-                                {profile.is_verified ? '✓ Yes' : '✗ No'}
-                            </span>
                         </div>
                         <div className="profile-field">
                             <label>Member since:</label>

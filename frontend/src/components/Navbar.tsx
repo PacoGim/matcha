@@ -10,11 +10,9 @@ function Navbar() {
 
     const handleLogout = async () => {
         try {
-            await fetch('http://10.171.62.221:3001/user/logout', {
+            await fetch('http://10.171.62.221:3000/user/logout', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                },
+                credentials: 'include',
             });
         } catch (error) {
             console.error('Logout error:', error);

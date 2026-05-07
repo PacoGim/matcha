@@ -8,10 +8,10 @@ interface User {
 
 interface AuthContextType {
     user: User | null;
-    token: string | null;
-    login: (token: string, user: User) => void;
+    login: (user: User) => void;
     logout: () => void;
     isAuthenticated: boolean;
+    isInitializing: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,39 +30,47 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
+    const [isInitializing, setIsInitializing] = useState(true);
 
     useEffect(() => {
-        // Check for stored token on app load
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
+        const loadUser = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://10.171.62.221:3000'}/user/profile`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
 
-        if (storedToken && storedUser) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-        }
+                if (response.ok) {
+                    const data = await response.json();
+                    setUser(data.user);
+                }
+            } catch (err) {
+                console.error('Auth initialization error:', err);
+            } finally {
+                setIsInitializing(false);
+            }
+        };
+
+        loadUser();
     }, []);
 
-    const login = (newToken: string, userData: User) => {
-        setToken(newToken);
+    const login = (userData: User) => {
         setUser(userData);
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(userData));
     };
 
     const logout = () => {
-        setToken(null);
         setUser(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
     };
 
     const value = {
         user,
-        token,
         login,
         logout,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !!user,
+        isInitializing,
     };
 
     return (

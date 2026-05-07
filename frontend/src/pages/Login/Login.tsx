@@ -32,6 +32,7 @@ export default function Login() {
         try {
             const response = await fetch('http://10.171.62.221:3000/user/login', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -44,8 +45,8 @@ export default function Login() {
                 throw new Error(data.error || 'Login failed');
             }
 
-            // Store token and user data using auth context
-            login(data.token, data.user);
+            // Store authenticated user in context; JWT is kept in an HttpOnly cookie
+            login(data.user);
 
             setMessage('Login successful! Welcome back.');
             setTimeout(() => {

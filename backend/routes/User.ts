@@ -145,9 +145,15 @@ userRoute.post("/user/login", async (req, res) => {
             { expiresIn: '24h' }
         )
 
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000,
+        })
+
         res.json({
             message: "Login successful",
-            token: token,
             user: {
                 id: user.id,
                 email: user.email,
@@ -162,8 +168,11 @@ userRoute.post("/user/login", async (req, res) => {
 
 userRoute.post("/user/logout", async (req, res) => {
     try {
-        // Pour JWT, le logout côté serveur est généralement géré côté client
-        // en supprimant le token. Ici on peut ajouter une logique de blacklist si nécessaire
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+        })
         res.json({ message: "Logout successful" })
     } catch (err) {
         console.error(err)
