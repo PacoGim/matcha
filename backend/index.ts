@@ -1,18 +1,20 @@
 import express from "express"
 import cors from "cors"
-import path from "path"
-import "dotenv/config"
 
 import db from "./database/db"
 import userRoute from "./routes/User"
 import profileRoute from "./routes/Profile"
 
+import dotenv from "dotenv"
+import path from "path"
+const __dirname = path.resolve()
+dotenv.config({
+    path: path.resolve(__dirname, "../.env")
+})
 const app = express()
 db.initPool()
 const PORT = 3000
-const HOST = "10.171.62.221"
 
-const __dirname = path.resolve()
 
 app.use(express.json())
 

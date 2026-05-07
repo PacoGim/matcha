@@ -1,7 +1,12 @@
-import {Router} from "express"
+import { Router } from "express"
 import db from "../database/db"
-import {hash, compare} from "bcrypt"
-import "dotenv/config"
+import { hash, compare } from "bcrypt"
+import dotenv from "dotenv"
+import path from "path"
+const __dirname = path.resolve()
+dotenv.config({
+    path: path.resolve(__dirname, "../.env")
+})
 import crypto from "crypto"
 import jwt from "jsonwebtoken"
 const userRoute = Router()
@@ -31,7 +36,7 @@ userRoute.get("/users", async (req, res) => {
 userRoute.post("/user/check-email-token", async (req, res) => {
     try {
         const { token } = req.body
-        
+
         if (!token) {
             return res.status(400).json({ error: "Token required" })
         }
@@ -76,29 +81,34 @@ userRoute.post("/user/register", async (req, res) => {
         const hashedPassword = await hash(password, 10)
         // console.log("userRegister", req.body, hashedPassword)
         const result = await db.getPool().query("INSERT INTO users (email, username, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4, $5) RETURNING id;", [email, username, hashedPassword, first_name, last_name])
-        
+
         // Generate verification token
         const verificationToken = crypto.randomBytes(32).toString('hex')
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-        
-        await db.getPool().query(
-            "INSERT INTO email_verifications (user_id, token, expires_at) VALUES ($1, $2, $3);",
-            [result.rows[0].id, verificationToken, expiresAt]
-        )
-        
+
+
         const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`
-        
-        const emailResponse = await transporter.sendMail({
+
+        transporter.sendMail({
             from: process.env.GMAIL_MAIL,
             to: email,
             subject: 'Verify your email',
-            html: `<p>Welcome to Matcha!</p><p>Please click the link below to verify your email and activate your account:</p><a href="${verificationLink}">Verify Email</a><p>This link will expire in 24 hours.</p>`
-        });
-        // console.log("emailResponse",emailResponse)
-        res.json({ userId: result.rows[0].id })
+            html: `<p>Welcome to Matcha!</p><p>Please click the link below to verify your email and activate your account:</p><a target="_blank" href="${verificationLink}">Verify Email</a><p>This link will expire in 24 hours.</p>`
+        }).then(async response => {
+            console.log("Verification email sent", response)
+            await db.getPool().query(
+                "INSERT INTO email_verifications (user_id, token, expires_at) VALUES ($1, $2, $3);",
+                [result.rows[0].id, verificationToken, expiresAt]
+            )
+            res.json({ message: "Registration successful, please check your email to verify your account" })
+        }).catch(err => {
+            console.error("Error sending email", err);
+            res.status(500).json({ error: "Try again later 106" })
+        })
+
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "DB error" })
+        console.error("user.ts ligne 105", err)
+        res.status(500).json({ error: "Try again later 111" })
     }
 })
 
