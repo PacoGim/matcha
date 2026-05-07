@@ -2,6 +2,7 @@ import { useState } from 'react';
 import './Register.css';
 import Navbar from '../../components/Navbar';
 import { validateUsername, getValidationRulesDescription } from '../../validators/usernameValidator';
+import { validateName, getValidationRulesDescription as getNameValidationRulesDescription } from '../../validators/nameValidator';
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -22,7 +23,7 @@ export default function Register() {
             ...prev,
             [name]: value
         }));
-        
+
         // Clear field error when user starts typing
         if (fieldErrors[name]) {
             setFieldErrors(prev => ({
@@ -39,9 +40,30 @@ export default function Register() {
         setFieldErrors({});
         setLoading(true);
 
+        // Accumulate all errors
+        const newErrors: { [key: string]: string } = {};
+
+        // Client-side validation for username
         const usernameError = validateUsername(formData.username);
         if (usernameError) {
-            setFieldErrors({ username: usernameError.message });
+            newErrors['username'] = usernameError.message;
+        }
+
+        // Client-side validation for first_name
+        const firstNameError = validateName(formData.first_name, 'first_name');
+        if (firstNameError) {
+            newErrors['first_name'] = firstNameError.message;
+        }
+
+        // Client-side validation for last_name
+        const lastNameError = validateName(formData.last_name, 'last_name');
+        if (lastNameError) {
+            newErrors['last_name'] = lastNameError.message;
+        }
+
+        // If there are validation errors, show them all and stop
+        if (Object.keys(newErrors).length > 0) {
+            setFieldErrors(newErrors);
             setLoading(false);
             return;
         }
@@ -129,6 +151,8 @@ export default function Register() {
                                 onChange={handleChange}
                                 required
                             />
+                            {fieldErrors.first_name && <span className="field-error">{fieldErrors.first_name}</span>}
+                            <span className="field-help">{getNameValidationRulesDescription()}</span>
                         </div>
 
                         <div className="form-group">
@@ -141,6 +165,8 @@ export default function Register() {
                                 onChange={handleChange}
                                 required
                             />
+                            {fieldErrors.last_name && <span className="field-error">{fieldErrors.last_name}</span>}
+                            <span className="field-help">{getNameValidationRulesDescription()}</span>
                         </div>
 
                         <div className="form-group">

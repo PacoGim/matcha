@@ -13,6 +13,8 @@ const userRoute = Router()
 
 import { authenticateToken, AuthRequest } from "../middleware/auth"
 import { validateUsername } from "../../frontend/src/validators/usernameValidator"
+import { validateName } from "../../frontend/src/validators/nameValidator"
+
 import nodemailer from "nodemailer"
 
 const transporter = nodemailer.createTransport({
@@ -86,6 +88,24 @@ userRoute.post("/user/register", async (req, res) => {
             return res.status(400).json({ 
                 error: usernameError.message,
                 field: usernameError.field 
+            })
+        }
+
+        // Validate first_name
+        const firstNameError = validateName(first_name, 'first_name')
+        if (firstNameError) {
+            return res.status(400).json({ 
+                error: firstNameError.message,
+                field: firstNameError.field 
+            })
+        }
+
+        // Validate last_name
+        const lastNameError = validateName(last_name, 'last_name')
+        if (lastNameError) {
+            return res.status(400).json({ 
+                error: lastNameError.message,
+                field: lastNameError.field 
             })
         }
 
