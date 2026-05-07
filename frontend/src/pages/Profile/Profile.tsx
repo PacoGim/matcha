@@ -24,7 +24,7 @@ export default function Profile() {
             }
 
             try {
-                const endpoint_profile = `${window.location.origin}/user/profile`
+                const endpoint_profile = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/profile`
                 const response = await fetch(endpoint_profile, {
                     method: 'GET',
                     credentials: 'include',

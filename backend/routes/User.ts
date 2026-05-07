@@ -14,6 +14,7 @@ const userRoute = Router()
 import { authenticateToken, AuthRequest } from "../middleware/auth"
 import { validateUsername } from "../../frontend/src/validators/usernameValidator"
 import { validateName } from "../../frontend/src/validators/nameValidator"
+import { validatePassword } from "../../frontend/src/validators/passwordValidator"
 
 import nodemailer from "nodemailer"
 
@@ -106,6 +107,15 @@ userRoute.post("/user/register", async (req, res) => {
             return res.status(400).json({ 
                 error: lastNameError.message,
                 field: lastNameError.field 
+            })
+        }
+
+        // Validate password
+        const passwordError = validatePassword(password)
+        if (passwordError) {
+            return res.status(400).json({ 
+                error: passwordError.message,
+                field: passwordError.field 
             })
         }
 

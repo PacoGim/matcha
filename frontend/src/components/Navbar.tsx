@@ -10,7 +10,7 @@ function Navbar() {
 
     const handleLogout = async () => {
         try {
-            const endpoint_logout = `${window.location.origin}/user/logout`;
+            const endpoint_logout = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/logout`
             await fetch(endpoint_logout, {
                 method: 'POST',
                 credentials: 'include',

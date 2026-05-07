@@ -3,6 +3,7 @@ import './Register.css';
 import Navbar from '../../components/Navbar';
 import { validateUsername, getValidationRulesDescription } from '../../validators/usernameValidator';
 import { validateName, getValidationRulesDescription as getNameValidationRulesDescription } from '../../validators/nameValidator';
+import { validatePassword, getValidationRulesDescription as getPasswordValidationRulesDescription } from '../../validators/passwordValidator';
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -59,6 +60,12 @@ export default function Register() {
         const lastNameError = validateName(formData.last_name, 'last_name');
         if (lastNameError) {
             newErrors['last_name'] = lastNameError.message;
+        }
+
+        // Client-side validation for password
+        const passwordError = validatePassword(formData.password);
+        if (passwordError) {
+            newErrors['password'] = passwordError.message;
         }
 
         // If there are validation errors, show them all and stop
@@ -179,6 +186,8 @@ export default function Register() {
                                 onChange={handleChange}
                                 required
                             />
+                            {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+                            <span className="field-help">{getPasswordValidationRulesDescription()}</span>
                         </div>
 
                         <button type="submit" disabled={loading}>
