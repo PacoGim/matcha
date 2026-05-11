@@ -316,6 +316,16 @@ userRoute.post("/user/reset-password", async (req, res) => {
             return res.status(401).json({ error: "Invalid or expired token" })
         }
 
+        const userResult = await db.getPool().query("SELECT password_hash FROM users WHERE id = $1;", [user_id])
+        if (!userResult.rows.length) {
+            return res.status(404).json({ error: "User not found" })
+        }
+
+        const isSamePassword = await compare(new_password, userResult.rows[0].password_hash)
+        if (isSamePassword) {
+            return res.status(400).json({ error: "New password cannot be the same as the current password" })
+        }
+
         const hashedPassword = await hash(new_password, 10)
         await db.getPool().query(
             "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2;",
@@ -358,6 +368,11 @@ userRoute.put("/user/password", authenticateToken, async (req: AuthRequest, res)
         const isMatch = await compare(current_password, user.password_hash)
         if (!isMatch) {
             return res.status(401).json({ error: "Current password is incorrect" })
+        }
+
+        const isSamePassword = await compare(new_password, user.password_hash)
+        if (isSamePassword) {
+            return res.status(400).json({ error: "New password cannot be the same as the current password" })
         }
 
         const hashedPassword = await hash(new_password, 10)

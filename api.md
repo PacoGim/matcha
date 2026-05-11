@@ -4,11 +4,11 @@
  - [x] POST   /user/login
  - [x] POST   /user/logout
  - [x] POST   /user/check-email
- - POST   /user/forgot-password
- - POST   /user/reset-password
+ - [x] POST   /user/forgot-password
+ - [x] POST   /user/reset-password
  - PUT	  /user/password
  - [x] GET    /user/profile
- - PUT    /user/profile
+ - [x] PUT    /user/profile
 
 ## Profile
 
