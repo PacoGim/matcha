@@ -26,6 +26,7 @@ CREATE TABLE email_verifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     token TEXT UNIQUE NOT NULL,
+    new_email TEXT,
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT NOW()
 );

@@ -4,15 +4,15 @@ GET http://10.171.62.221:3000/profile/8fbde9c9-1e9a-486e-8ca6-6cfb3bef0f78
 
 
 ### user/register 9da9cd24-e696-420b-8d36-97c6970602b5
-POST http://10.171.62.221:3000/user/register
+POST http://10.171.62.221:4242/user/register
 Content-Type: application/json
 
 {
     "email": "hired79133@cadinr.com",
     "username": "hired79133",
     "password": "password123",
-    "first_name": "John",
-    "last_name": "Doe"
+    "first_name": "123",
+    "last_name": "456"
 }
 
 ### user/login 9da9cd24-e696-420b-8d36-97c6970602b5
@@ -48,4 +48,12 @@ Content-Type: application/json
         "longitude": -122.4194,
         "allow_gps": true
     }
+}
+
+###
+POST http://10.171.62.221:4242/user/forgot-password
+Content-Type: application/json
+
+{
+    "email": "sogerek126@badgerhole.com"
 }

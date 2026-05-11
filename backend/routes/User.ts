@@ -32,7 +32,6 @@ const transporter = nodemailer.createTransport({
 
 userRoute.get("/users", async (req, res) => {
     try {
-        // console.log("userRoute", req)
         const result = await db.getPool().query("SELECT * FROM users;")
         res.json(result.rows)
     } catch (err) {
@@ -50,7 +49,7 @@ userRoute.post("/user/check-email-token", async (req, res) => {
         }
 
         const result = await db.getPool().query(
-            "SELECT user_id, expires_at FROM email_verifications WHERE token = $1;",
+            "SELECT user_id, new_email, expires_at FROM email_verifications WHERE token = $1;",
             [token]
         )
 
@@ -58,30 +57,35 @@ userRoute.post("/user/check-email-token", async (req, res) => {
             return res.status(401).json({ error: "Invalid token" })
         }
 
-        const { user_id, expires_at } = result.rows[0]
+        const { user_id, new_email, expires_at } = result.rows[0]
 
         if (new Date() > new Date(expires_at)) {
             return res.status(401).json({ error: "Token expired" })
         }
 
-        // Update user as verified
-        await db.getPool().query(
-            "UPDATE users SET is_verified = true WHERE id = $1;",
-            [user_id]
-        )
+        if (new_email) {
+            await db.getPool().query(
+                "UPDATE users SET email = $1 WHERE id = $2;",
+                [new_email, user_id]
+            )
+        } else {
+            await db.getPool().query(
+                "UPDATE users SET is_verified = true WHERE id = $1;",
+                [user_id]
+            )
 
-        // Delete the token
+            await db.getPool().query(
+                "INSERT INTO profiles (user_id, gender) VALUES ($1, $2);",
+                [user_id, 'null']
+            )
+        }
+
         await db.getPool().query(
             "DELETE FROM email_verifications WHERE token = $1;",
             [token]
         )
 
-        await db.getPool().query(
-            "INSERT INTO profiles (user_id, gender) VALUES ($1, $2);",
-            [user_id, 'null']
-        )
-
-        res.json({ message: "Email verified successfully" })
+        res.json({ message: new_email ? "Email updated successfully" : "Email verified successfully" })
     } catch (err) {
         console.error(err)
         res.status(500).json({ error: "Server error 83" })
@@ -152,8 +156,8 @@ userRoute.post("/user/register", async (req, res) => {
         }).then(async response => {
             console.log("Verification email sent", response)
             await db.getPool().query(
-                "INSERT INTO email_verifications (user_id, token, expires_at) VALUES ($1, $2, $3);",
-                [result.rows[0].id, verificationToken, expiresAt]
+                "INSERT INTO email_verifications (user_id, token, expires_at, new_email) VALUES ($1, $2, $3, $4);",
+                [result.rows[0].id, verificationToken, expiresAt, null]
             )
             res.json({ message: "Registration successful, please check your email to verify your account" })
         }).catch(err => {
@@ -330,6 +334,10 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
 
         const { user: userUpdates, profile: profileUpdates } = req.body
 
+        if (!userUpdates && !profileUpdates) {
+            return res.status(400).json({ error: "No updates provided" })
+        }
+
         // Validation des champs user
         const validationErrors: { field: string; error: string }[] = []
 
@@ -413,6 +421,25 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
             return res.status(400).json({ errors: validationErrors })
         }
 
+        let pendingEmailUpdate: string | null = null
+        let pendingEmailVerification: { token: string; email: string } | null = null
+        let verificationEmailSent = false
+
+        if (userUpdates?.email) {
+            const currentUserResult = await db.getPool().query(
+                "SELECT email FROM users WHERE id = $1;",
+                [userId]
+            )
+            if (!currentUserResult.rows.length) {
+                return res.status(404).json({ error: "User not found" })
+            }
+
+            const currentEmail = currentUserResult.rows[0].email
+            if (userUpdates.email !== currentEmail) {
+                pendingEmailUpdate = userUpdates.email
+            }
+        }
+
         const client = await db.getPool().connect()
 
         try {
@@ -424,10 +451,6 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
                 const values = []
                 let paramIndex = 1
 
-                if (userUpdates.email) {
-                    updateFields.push(`email = $${paramIndex++}`)
-                    values.push(userUpdates.email)
-                }
                 if (userUpdates.first_name) {
                     updateFields.push(`first_name = $${paramIndex++}`)
                     values.push(userUpdates.first_name)
@@ -539,7 +562,39 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
                 }
             }
 
+            if (pendingEmailUpdate) {
+                await client.query('DELETE FROM email_verifications WHERE user_id = $1', [userId])
+
+                const verificationToken = crypto.randomBytes(32).toString('hex')
+                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+                await client.query(
+                    "INSERT INTO email_verifications (user_id, token, expires_at, new_email) VALUES ($1, $2, $3, $4)",
+                    [userId, verificationToken, expiresAt, pendingEmailUpdate]
+                )
+
+                pendingEmailVerification = {
+                    token: verificationToken,
+                    email: pendingEmailUpdate,
+                }
+            }
+
             await client.query('COMMIT')
+
+            if (pendingEmailVerification) {
+                try {
+                    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${pendingEmailVerification.token}`
+                    await transporter.sendMail({
+                        from: process.env.GMAIL_MAIL,
+                        to: pendingEmailVerification.email,
+                        subject: 'Verify your new email',
+                        html: `<p>You requested an email change for Matcha.</p><p>Please click the link below to confirm your new email address:</p><a target="_blank" href="${verificationLink}">Verify Email</a><p>This link will expire in 24 hours.</p>`
+                    })
+                    verificationEmailSent = true
+                } catch (sendErr) {
+                    console.error('Error sending email verification for profile update', sendErr)
+                }
+            }
 
             // Retourner le profil mis à jour
             const result = await client.query(
@@ -589,7 +644,15 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
                 allow_gps: row.allow_gps,
             }
 
-            res.json({ user, profile })
+            const responsePayload: Record<string, unknown> = { user, profile }
+            if (pendingEmailUpdate) {
+                responsePayload.email_verification_sent = verificationEmailSent
+                responsePayload.message = verificationEmailSent
+                    ? 'Profile updated, please verify your new email to complete the change.'
+                    : 'Profile updated, but verification email could not be sent. Please retry email change.'
+            }
+
+            res.json(responsePayload)
 
         } catch (dbError) {
             await client.query('ROLLBACK')
