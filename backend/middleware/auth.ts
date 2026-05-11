@@ -11,6 +11,7 @@ export interface AuthRequest extends Request {
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
     const token = req.cookies?.token;
+    console.log('cookies:', req.cookies);
 
     if (!token) {
         return res.status(401).json({ error: 'Access token required' });

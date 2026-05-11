@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './ResetPassword.css';
 import Navbar from '../../components/Navbar';
@@ -14,26 +14,18 @@ export default function ResetPassword() {
     const navigate = useNavigate();
     const token = searchParams.get('token');
 
-    useEffect(() => {
-        if (!token) {
-            setError('Invalid reset link. Missing token.');
-        }
-    }, [token]);
-
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
         setMessage('');
         setLoading(true);
 
-        // Validate passwords match
         if (newPassword !== confirmPassword) {
             setError('Passwords do not match');
             setLoading(false);
             return;
         }
 
-        // Validate new password
         const passwordError = validatePassword(newPassword);
         if (passwordError) {
             setError(passwordError.message);
@@ -41,16 +33,15 @@ export default function ResetPassword() {
             return;
         }
 
-        if (!token) {
-            setError('Invalid reset link. Missing token.');
-            setLoading(false);
-            return;
-        }
-
         try {
-            const endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/reset-password`;
+            let endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/password`;
+
+            if (token) {
+                endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/reset-password`;
+            }
             const response = await fetch(endpoint, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -85,46 +76,35 @@ export default function ResetPassword() {
                     <h1>Reset Password</h1>
                     {message && <div className="success-message">{message}</div>}
                     {error && <div className="error-message">{error}</div>}
-
-                    {token ? (
-                        <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label htmlFor="newPassword">New Password</label>
-                                <input
-                                    type="password"
-                                    id="newPassword"
-                                    name="newPassword"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="confirmPassword">Confirm Password</label>
-                                <input
-                                    type="password"
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <button type="submit" disabled={loading}>
-                                {loading ? 'Resetting Password...' : 'Reset Password'}
-                            </button>
-                        </form>
-                    ) : (
-                        <div className="error-container">
-                            <p>Invalid or expired reset link. Please request a new password reset.</p>
-                            <button onClick={() => navigate('/login')} className="back-button">
-                                Back to Login
-                            </button>
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="newPassword">New Password</label>
+                            <input
+                                type="password"
+                                id="newPassword"
+                                name="newPassword"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                required
+                            />
                         </div>
-                    )}
 
+                        <div className="form-group">
+                            <label htmlFor="confirmPassword">Confirm Password</label>
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <button type="submit" disabled={loading}>
+                            {loading ? 'Resetting Password...' : 'Reset Password'}
+                        </button>
+                    </form>
                     <div className="login-link">
                         <p>Remember your password? <button type="button" className="link-button" onClick={() => navigate('/login')}>Login here</button></p>
                     </div>

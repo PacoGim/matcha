@@ -340,7 +340,7 @@ userRoute.post("/user/reset-password", async (req, res) => {
     }
 })
 
-userRoute.put("/user/password", authenticateToken, async (req: AuthRequest, res) => {
+userRoute.post("/user/password", authenticateToken, async (req: AuthRequest, res) => {
     try {
         const userId = req.user?.id
 
@@ -348,31 +348,15 @@ userRoute.put("/user/password", authenticateToken, async (req: AuthRequest, res)
             return res.status(401).json({ error: "Unauthorized" })
         }
 
-        const { current_password, new_password } = req.body
+        const { new_password } = req.body
 
-        if (!current_password || !new_password) {
-            return res.status(400).json({ error: "current_password and new_password are required" })
+        if (!new_password) {
+            return res.status(400).json({ error: "new_password is required" })
         }
 
         const passwordError = validatePassword(new_password)
         if (passwordError) {
             return res.status(400).json({ error: passwordError.message, field: passwordError.field })
-        }
-
-        const result = await db.getPool().query("SELECT password_hash FROM users WHERE id = $1;", [userId])
-        if (!result.rows.length) {
-            return res.status(404).json({ error: "User not found" })
-        }
-
-        const user = result.rows[0]
-        const isMatch = await compare(current_password, user.password_hash)
-        if (!isMatch) {
-            return res.status(401).json({ error: "Current password is incorrect" })
-        }
-
-        const isSamePassword = await compare(new_password, user.password_hash)
-        if (isSamePassword) {
-            return res.status(400).json({ error: "New password cannot be the same as the current password" })
         }
 
         const hashedPassword = await hash(new_password, 10)

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 import Navbar from '../../components/Navbar';
 import LocationPicker from '../../components/LocationPicker';
@@ -61,6 +62,7 @@ export default function ProfilePage() {
 
     const { isInitializing } = useAuth();
     const geocodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -146,9 +148,16 @@ export default function ProfilePage() {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const target = e.target;
-        const { name, value } = target;
+        const { name } = target;
         const checked = target instanceof HTMLInputElement ? target.checked : false;
         const type = target instanceof HTMLInputElement ? target.type : '';
+        const value = target instanceof HTMLInputElement
+            ? type === 'number'
+                ? Number.isFinite(target.valueAsNumber)
+                    ? target.valueAsNumber
+                    : 0
+                : target.value
+            : target.value;
 
         setFormData(prev => ({
             ...prev,
@@ -465,6 +474,12 @@ export default function ProfilePage() {
                                         }}
                                     >
                                         Edit Profile
+                                    </button>
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => navigate('/reset-password')}
+                                    >
+                                        Reset Password
                                     </button>
                                 </div>
                             </>

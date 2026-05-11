@@ -24,16 +24,25 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   onLocationChange,
   allowEdit = true
 }) => {
-  const [position, setPosition] = useState<[number, number]>([latitude, longitude]);
+  const [position, setPosition] = useState<[number, number]>([
+    Number.isFinite(latitude) ? latitude : 0,
+    Number.isFinite(longitude) ? longitude : 0,
+  ]);
 
   useEffect(() => {
-    setPosition([latitude, longitude]);
+    setPosition([
+      Number.isFinite(latitude) ? latitude : 0,
+      Number.isFinite(longitude) ? longitude : 0,
+    ]);
   }, [latitude, longitude]);
+
+  const validPosition = Number.isFinite(position[0]) && Number.isFinite(position[1]);
+  const safePosition: [number, number] = validPosition ? position : [0, 0];
 
   const MapClickHandler = () => {
     useMapEvents({
       click: (e) => {
-        if (allowEdit) {
+        if (allowEdit && e.latlng) {
           const { lat, lng } = e.latlng;
           setPosition([lat, lng]);
           onLocationChange(lat, lng);
@@ -46,7 +55,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   return (
     <div style={{ height: '300px', width: '100%', borderRadius: '4px', overflow: 'hidden' }}>
       <MapContainer
-        center={position}
+        center={safePosition}
         zoom={13}
         style={{ height: '100%', width: '100%' }}
         zoomControl={true}
@@ -55,7 +64,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <Marker position={position}>
+        <Marker position={safePosition}>
           <Popup>
             {allowEdit ? 'Click on the map to set your location' : 'Your current location'}
           </Popup>
