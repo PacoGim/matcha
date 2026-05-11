@@ -1,13 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  color-scheme: light;
+  --background: #f6fce8;
+  --surface: #f0f6e2;
+  --surface-elevated: #ffffff;
+  --surface-border: #dfe5d2;
+  --surface-muted: #e4ebd7;
+  --primary: #446900;
+  --primary-dark: #324f00;
+  --primary-soft: #74a12e;
+  --text: #181d12;
+  --muted: #434939;
+  --error: #ba1a1a;
+  --error-surface: #ffdad6;
+  --shadow: 0 32px 64px -16px rgba(45, 51, 38, 0.12);
+  --radius: 1.5rem;
+  --radius-sm: 0.75rem;
+  --radius-xs: 0.5rem;
+  --gutter: 1.5rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background: radial-gradient(circle at top right, #f0f6e2 0%, #f6fce8 100%);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+input,
+textarea,
+button {
+  transition: all 0.2s ease;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

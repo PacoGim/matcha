@@ -1,13 +1,31 @@
 #about-page {
-    min-height: 100vh;
-    background-color: #f5f5f5;
-    padding: 1rem;
-    padding-top: 80px; /* Account for navbar */
+  min-height: calc(100vh - 72px);
+  padding: 2rem 1.25rem 3rem;
+}
+
+.about-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2.5rem;
+  backdrop-filter: blur(10px);
 }
 
 #about-page h1 {
-    color: #333;
-    text-align: center;
-    margin-top: 2rem;
-    font-size: 2.5rem;
+  color: var(--primary-dark);
+  text-align: center;
+  margin-top: 0;
+  font-size: clamp(2.4rem, 2.8vw, 3.2rem);
+}
+
+#about-page p {
+  color: var(--muted);
+  max-width: 42rem;
+  margin: 1.5rem auto 0;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1.8;
 }

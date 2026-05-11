@@ -106,7 +106,7 @@ export default function Login() {
                     </form>
 
                     <div className="register-link">
-                        <p>Don't have an account? <a href="#" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>Register here</a></p>
+                        <p>Don't have an account? <button type="button" className="link-button" onClick={() => navigate('/register')}>Register here</button></p>
                     </div>
                 </div>
             </div>
