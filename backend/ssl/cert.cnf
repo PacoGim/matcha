@@ -1,0 +1,20 @@
+[req]
+default_bits = 4096
+prompt = no
+default_md = sha256
+distinguished_name = dn
+x509_extensions = v3_req
+
+[dn]
+C=FR
+ST=IDF
+L=Paris
+O=Dev
+CN=10.171.62.221
+
+[v3_req]
+subjectAltName=@alt_names
+
+[alt_names]
+DNS.1=matcha
+IP.1=10.171.62.221
