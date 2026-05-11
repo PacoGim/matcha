@@ -245,6 +245,127 @@ userRoute.post("/user/login", async (req, res) => {
     }
 })
 
+userRoute.post("/user/forgot-password", async (req, res) => {
+    try {
+        const { email } = req.body
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ error: "Valid email is required" })
+        }
+
+        const result = await db.getPool().query("SELECT id FROM users WHERE email = $1;", [email])
+
+        if (result.rows.length) {
+            const userId = result.rows[0].id
+            const resetToken = crypto.randomBytes(32).toString('hex')
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+
+            await db.getPool().query("DELETE FROM password_resets WHERE user_id = $1;", [userId])
+            await db.getPool().query(
+                "INSERT INTO password_resets (user_id, token, expires_at) VALUES ($1, $2, $3);",
+                [userId, resetToken, expiresAt]
+            )
+
+            const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`
+            await transporter.sendMail({
+                from: process.env.GMAIL_MAIL,
+                to: email,
+                subject: 'Reset your Matcha password',
+                html: `<p>You requested a password reset for Matcha.</p><p>Please click the link below to reset your password:</p><a target="_blank" href="${resetLink}">Reset Password</a><p>This link will expire in 1 hour.</p>`
+            })
+        }
+
+        res.json({ message: "If an account with that email exists, a password reset link has been sent." })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Server error 245" })
+    }
+})
+
+userRoute.post("/user/reset-password", async (req, res) => {
+    try {
+        const { token, new_password } = req.body
+
+        if (!token || !new_password) {
+            return res.status(400).json({ error: "Token and new_password are required" })
+        }
+
+        const passwordError = validatePassword(new_password)
+        if (passwordError) {
+            return res.status(400).json({ error: passwordError.message, field: passwordError.field })
+        }
+
+        const result = await db.getPool().query(
+            "SELECT user_id, expires_at FROM password_resets WHERE token = $1;",
+            [token]
+        )
+
+        if (!result.rows.length) {
+            return res.status(401).json({ error: "Invalid or expired token" })
+        }
+
+        const { user_id, expires_at } = result.rows[0]
+        if (new Date() > new Date(expires_at)) {
+            return res.status(401).json({ error: "Invalid or expired token" })
+        }
+
+        const hashedPassword = await hash(new_password, 10)
+        await db.getPool().query(
+            "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2;",
+            [hashedPassword, user_id]
+        )
+        await db.getPool().query("DELETE FROM password_resets WHERE token = $1;", [token])
+
+        res.json({ message: "Password has been reset successfully" })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Server error 246" })
+    }
+})
+
+userRoute.put("/user/password", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+        const userId = req.user?.id
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" })
+        }
+
+        const { current_password, new_password } = req.body
+
+        if (!current_password || !new_password) {
+            return res.status(400).json({ error: "current_password and new_password are required" })
+        }
+
+        const passwordError = validatePassword(new_password)
+        if (passwordError) {
+            return res.status(400).json({ error: passwordError.message, field: passwordError.field })
+        }
+
+        const result = await db.getPool().query("SELECT password_hash FROM users WHERE id = $1;", [userId])
+        if (!result.rows.length) {
+            return res.status(404).json({ error: "User not found" })
+        }
+
+        const user = result.rows[0]
+        const isMatch = await compare(current_password, user.password_hash)
+        if (!isMatch) {
+            return res.status(401).json({ error: "Current password is incorrect" })
+        }
+
+        const hashedPassword = await hash(new_password, 10)
+        await db.getPool().query(
+            "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2;",
+            [hashedPassword, userId]
+        )
+
+        res.json({ message: "Password updated successfully" })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Server error 247" })
+    }
+})
+
 userRoute.post("/user/logout", async (req, res) => {
     try {
         res.clearCookie('token', {

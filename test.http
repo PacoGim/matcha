@@ -15,15 +15,41 @@ Content-Type: application/json
     "last_name": "456"
 }
 
-### user/login 9da9cd24-e696-420b-8d36-97c6970602b5
-POST http://10.171.62.221:3000/user/login
+###
+POST http://10.171.62.221:4242/user/login
 Content-Type: application/json
 
 {
-    "email": "tipton.bakary@forliion.com",
-    "password": "password123"
+    "email": "sogerek126@badgerhole.com",
+    "password": "Bobby@123"
 }
 
+###
+POST http://10.171.62.221:4242/user/forgot-password
+Content-Type: application/json
+
+{
+    "email": "sogerek126@badgerhole.com"
+}
+
+###
+POST http://10.171.62.221:4242/user/reset-password
+Content-Type: application/json
+
+{
+    "token": "81adeb78d6f1e092f3bf1d42d110cfd175fbc7cb006ef1b04538e7d71b67b79c",
+    "new_password": "Bobby@123"
+}
+
+###
+PUT http://10.171.62.221:4242/user/password
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY3MGNhNDdhLWE2YmMtNGM3Ni1hZjg5LTZiODJmOTU0NzI4NyIsImVtYWlsIjoic29nZXJlazEyNkBiYWRnZXJob2xlLmNvbSIsInVzZXJuYW1lIjoiYm9iIiwiaWF0IjoxNzc4NTAxNDUyLCJleHAiOjE3Nzg1ODc4NTJ9.sC35yrk6_lEkkwXtvM1U1g1Z7H1F82gsyMEpyv5l14I
+Content-Type: application/json
+
+{
+    "current_password": "Bobby@123",
+    "new_password": "PoQ456@123"
+}
 
 ###
 GET	http://10.171.62.221:4242/user/profile
