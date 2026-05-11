@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './Profile.css';
 import Navbar from '../../components/Navbar';
 import LocationPicker from '../../components/LocationPicker';
 import { useAuth } from '../../contexts/AuthContext';
+import { validateName } from '../../validators/nameValidator';
 
 interface User {
     email: string;
@@ -59,6 +60,7 @@ export default function ProfilePage() {
     });
 
     const { isInitializing } = useAuth();
+    const geocodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -106,6 +108,42 @@ export default function ProfilePage() {
         fetchProfile();
     }, [isInitializing]);
 
+    // Reverse geocoding with debounce when coordinates change
+    useEffect(() => {
+        if (formData.latitude === 0 && formData.longitude === 0) {
+            return; // Skip if coordinates are not set
+        }
+
+        // Clear previous timeout
+        if (geocodeTimeoutRef.current) {
+            clearTimeout(geocodeTimeoutRef.current);
+        }
+
+        // Set new timeout with 1 second debounce
+        geocodeTimeoutRef.current = setTimeout(async () => {
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${formData.latitude}&lon=${formData.longitude}`
+                );
+                const data = await response.json();
+                if (data.display_name) {
+                    setFormData(prev => ({
+                        ...prev,
+                        location: data.display_name,
+                    }));
+                }
+            } catch (err) {
+                console.warn('Could not fetch location details:', err);
+            }
+        }, 1000); // 1 second debounce
+
+        return () => {
+            if (geocodeTimeoutRef.current) {
+                clearTimeout(geocodeTimeoutRef.current);
+            }
+        };
+    }, [formData.latitude, formData.longitude]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const target = e.target;
         const { name, value } = target;
@@ -134,6 +172,42 @@ export default function ProfilePage() {
         setError('');
         setSuccessMessage('');
         setFieldErrors({});
+
+        const newErrors: FieldErrors = {};
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!formData.email || !emailRegex.test(formData.email)) {
+            newErrors.email = 'Please enter a valid email address';
+        }
+
+        const firstNameError = validateName(formData.first_name, 'first_name');
+        if (firstNameError) {
+            newErrors[firstNameError.field] = firstNameError.message;
+        }
+
+        const lastNameError = validateName(formData.last_name, 'last_name');
+        if (lastNameError) {
+            newErrors[lastNameError.field] = lastNameError.message;
+        }
+
+        if (formData.gender && !['male', 'female', 'other'].includes(formData.gender)) {
+            newErrors.gender = 'Invalid gender value';
+        }
+
+        if (formData.sexual_preference && !['male', 'female', 'both'].includes(formData.sexual_preference)) {
+            newErrors.sexual_preference = 'Invalid sexual preference value';
+        }
+
+        if (formData.biography && formData.biography.length > 100) {
+            newErrors.biography = 'Biography cannot exceed 100 characters';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setFieldErrors(newErrors);
+            setError('Please fix validation errors.');
+            setIsSaving(false);
+            return;
+        }
 
         try {
             const endpoint_profile = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/profile`;
@@ -254,6 +328,7 @@ export default function ProfilePage() {
                 }));
                 setLocationPermission('granted');
                 setError('');
+                // Reverse geocoding is now handled by useEffect watching latitude/longitude
             },
             (err) => {
                 let errorMessage = 'Unable to retrieve your location.';
