@@ -52,8 +52,13 @@ export default function Login() {
 
             setMessage('Login successful! Welcome back.');
             setTimeout(() => {
-                navigate('/');
-            }, 1500);
+                if (localStorage.getItem('firstLogin')) {
+                    localStorage.removeItem('firstLogin');
+                    navigate('/profile');
+                } else {
+                    navigate('/');
+                }
+            }, 1000);
 
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');

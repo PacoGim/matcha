@@ -38,8 +38,9 @@ export default function CheckEmail() {
 
                 setMessage('Email verified successfully! Redirecting to login...');
                 setTimeout(() => {
+                    localStorage.setItem('firstLogin', 'true');
                     navigate('/login');
-                }, 2000);
+                }, 1000);
 
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Verification failed');

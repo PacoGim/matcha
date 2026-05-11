@@ -72,10 +72,15 @@ userRoute.post("/user/check-email-token", async (req, res) => {
             [token]
         )
 
+        await db.getPool().query(
+            "INSERT INTO profiles (user_id, gender) VALUES ($1, $2);",
+            [user_id, 'null']
+        )
+
         res.json({ message: "Email verified successfully" })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error" })
+        res.status(500).json({ error: "Server error 78" })
     }
 })
 
@@ -223,7 +228,7 @@ userRoute.post("/user/login", async (req, res) => {
         })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error" })
+        res.status(500).json({ error: "Server error 226" })
     }
 })
 
@@ -237,7 +242,7 @@ userRoute.post("/user/logout", async (req, res) => {
         res.json({ message: "Logout successful" })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error" })
+        res.status(500).json({ error: "Server error 240" })
     }
 })
 
@@ -250,7 +255,28 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
         }
 
         const result = await db.getPool().query(
-            "SELECT id, email, username, first_name, last_name, is_verified, created_at FROM users WHERE id=$1;",
+            `SELECT
+                u.id AS user_id,
+                u.email,
+                u.username,
+                u.first_name,
+                u.last_name,
+                u.is_verified,
+                u.fame_rating,
+                u.created_at AS user_created_at,
+                u.updated_at AS user_updated_at,
+                p.gender,
+                p.sexual_preference,
+                p.biography,
+                p.location,
+                p.latitude,
+                p.longitude,
+                p.allow_gps,
+                p.created_at AS profile_created_at,
+                p.updated_at AS profile_updated_at
+            FROM users u
+            LEFT JOIN profiles p ON u.id = p.user_id
+            WHERE u.id = $1;`,
             [userId]
         )
 
@@ -258,10 +284,31 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
             return res.status(404).json({ error: "User not found" })
         }
 
-        res.json({ user: result.rows[0] })
+        const row = result.rows[0]
+        const user = {
+            email: row.email,
+            username: row.username,
+            first_name: row.first_name,
+            last_name: row.last_name,
+            is_verified: row.is_verified,
+            fame_rating: row.fame_rating,
+            created_at: row.user_created_at,
+            updated_at: row.user_updated_at,
+        }
+        const profile = {   
+            gender: row.gender,
+            sexual_preference: row.sexual_preference,
+            biography: row.biography,
+            location: row.location,
+            latitude: row.latitude,
+            longitude: row.longitude,
+            allow_gps: row.allow_gps,
+        }
+
+        res.json({user, profile})
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error" })
+        res.status(500).json({ error: "Server error 264" })
     }
 })
 

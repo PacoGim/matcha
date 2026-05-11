@@ -7,3 +7,4 @@ data
 frontend/build
 .vscode
 ssl/
+!ssl/cert.cnf

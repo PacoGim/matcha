@@ -1,4 +1,4 @@
-CREATE TYPE gender AS ENUM ('male', 'female', 'other');
+CREATE TYPE gender AS ENUM ('male', 'female', 'other', 'null');
 CREATE TYPE sexual_pref AS ENUM ('male', 'female', 'both');
 
 CREATE TYPE notification_type AS ENUM (
@@ -46,7 +46,7 @@ CREATE TABLE profiles (
     location TEXT,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
-    allow_gps BOOLEAN DEFAULT TRUE,
+    allow_gps BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
