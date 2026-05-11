@@ -106,4 +106,48 @@ ON l1.liker_id = l2.liked_id
 AND l1.liked_id = l2.liker_id;
 EOF
 
+echo "[*] Creating special user bob..."
+
+$PSQL <<'EOF'
+WITH new_user AS (
+    INSERT INTO users (
+        email,
+        username,
+        password_hash,
+        first_name,
+        last_name,
+        is_verified,
+        fame_rating
+    )
+    VALUES (
+        'b@b.b',
+        'bob',
+        '$2b$10$S/TOfkABQGcCr.tf3PsBSO9/gVWh6VPT5KV3iCabLrWXRQkxbdBu2',
+        'Bob',
+        'Doe',
+        TRUE,
+        42
+    )
+    RETURNING id
+)
+INSERT INTO profiles (
+    user_id,
+    gender,
+    sexual_preference,
+    biography,
+    location,
+    latitude,
+    longitude
+)
+SELECT
+    id,
+    'male',
+    'female',
+    'Hello, I am Bob. I love coding and traveling.',
+    'Paris',
+    48.8566,
+    2.3522
+FROM new_user;
+EOF
+
 echo "[✔] Seeding complete."
