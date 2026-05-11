@@ -115,6 +115,10 @@
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
+.form-input.error {
+    border-color: #dc3545;
+}
+
 .form-input:focus {
     outline: none;
     border-color: #007bff;
@@ -124,6 +128,12 @@
 .form-input.textarea {
     resize: vertical;
     min-height: 100px;
+}
+
+.field-error {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
 }
 
 /* Checkbox styling */

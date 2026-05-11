@@ -30,6 +30,10 @@ interface ProfileResponse {
     profile: Profile;
 }
 
+interface FieldErrors {
+    [key: string]: string;
+}
+
 export default function ProfilePage() {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
@@ -39,6 +43,7 @@ export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'prompt' | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
     const [formData, setFormData] = useState({
         email: '',
@@ -111,12 +116,24 @@ export default function ProfilePage() {
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
+
+        if (fieldErrors[name]) {
+            setFieldErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
     };
+
+    const getFieldError = (field: string) => fieldErrors[field] || '';
+
+    const inputClass = (field: string) => `form-input${fieldErrors[field] ? ' error' : ''}`;
 
     const handleSave = async () => {
         setIsSaving(true);
         setError('');
         setSuccessMessage('');
+        setFieldErrors({});
 
         try {
             const endpoint_profile = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/profile`;
@@ -144,15 +161,28 @@ export default function ProfilePage() {
                 }),
             });
 
-            const data: ProfileResponse = await response.json();
+            const data = await response.json();
 
-            console.log('Update response: ', data);
             if (!response.ok) {
-                throw new Error('Failed to update profile');
+                if (data && Array.isArray(data.errors)) {
+                    const errors = data.errors.reduce((acc: FieldErrors, err: any) => {
+                        if (err && err.field && err.error) {
+                            acc[err.field] = err.error;
+                        }
+                        return acc;
+                    }, {});
+
+                    setFieldErrors(errors);
+                    setError(data.message || data.errors[0]?.error || 'Please fix validation errors.');
+                    return;
+                }
+
+                throw new Error(data.error || 'Failed to update profile');
             }
 
-            setUser(data.user);
-            setProfile(data.profile);
+            const result: ProfileResponse = data;
+            setUser(result.user);
+            setProfile(result.profile);
             setIsEditing(false);
             setSuccessMessage('Profile updated successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -178,6 +208,8 @@ export default function ProfilePage() {
                 allow_gps: profile.allow_gps,
             });
         }
+        setFieldErrors({});
+        setError('');
         setIsEditing(false);
     };
 
@@ -351,7 +383,11 @@ export default function ProfilePage() {
                                 <div className="button-group">
                                     <button
                                         className="btn btn-primary"
-                                        onClick={() => setIsEditing(true)}
+                                        onClick={() => {
+                                            setFieldErrors({});
+                                            setError('');
+                                            setIsEditing(true);
+                                        }}
                                     >
                                         Edit Profile
                                     </button>
@@ -371,8 +407,9 @@ export default function ProfilePage() {
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className="form-input"
+                                                className={inputClass('email')}
                                             />
+                                            {getFieldError('email') && <div className="field-error">{getFieldError('email')}</div>}
                                         </div>
                                         <div className="form-group">
                                             <label htmlFor="first_name">First Name:</label>
@@ -382,8 +419,9 @@ export default function ProfilePage() {
                                                 name="first_name"
                                                 value={formData.first_name}
                                                 onChange={handleInputChange}
-                                                className="form-input"
+                                                className={inputClass('first_name')}
                                             />
+                                            {getFieldError('first_name') && <div className="field-error">{getFieldError('first_name')}</div>}
                                         </div>
                                         <div className="form-group">
                                             <label htmlFor="last_name">Last Name:</label>
@@ -393,8 +431,9 @@ export default function ProfilePage() {
                                                 name="last_name"
                                                 value={formData.last_name}
                                                 onChange={handleInputChange}
-                                                className="form-input"
+                                                className={inputClass('last_name')}
                                             />
+                                            {getFieldError('last_name') && <div className="field-error">{getFieldError('last_name')}</div>}
                                         </div>
                                     </div>
 
@@ -409,8 +448,9 @@ export default function ProfilePage() {
                                                 name="location"
                                                 value={formData.location}
                                                 onChange={handleInputChange}
-                                                className="form-input"
+                                                className={inputClass('location')}
                                             />
+                                            {getFieldError('location') && <div className="field-error">{getFieldError('location')}</div>}
                                         </div>
                                         <div className="form-group">
                                             <label htmlFor="latitude">Latitude:</label>
@@ -420,9 +460,10 @@ export default function ProfilePage() {
                                                 name="latitude"
                                                 value={formData.latitude}
                                                 onChange={handleInputChange}
-                                                className="form-input"
+                                                className={inputClass('latitude')}
                                                 step="any"
                                             />
+                                            {getFieldError('latitude') && <div className="field-error">{getFieldError('latitude')}</div>}
                                         </div>
                                         <div className="form-group">
                                             <label htmlFor="longitude">Longitude:</label>
@@ -432,9 +473,10 @@ export default function ProfilePage() {
                                                 name="longitude"
                                                 value={formData.longitude}
                                                 onChange={handleInputChange}
-                                                className="form-input"
+                                                className={inputClass('longitude')}
                                                 step="any"
                                             />
+                                            {getFieldError('longitude') && <div className="field-error">{getFieldError('longitude')}</div>}
                                         </div>
                                         <div className="form-group">
                                             <label className="checkbox-label">
@@ -447,6 +489,7 @@ export default function ProfilePage() {
                                                 />
                                                 Allow GPS Tracking
                                             </label>
+                                            {getFieldError('allow_gps') && <div className="field-error">{getFieldError('allow_gps')}</div>}
                                         </div>
                                         {isEditing && (
                                             <div className="form-group">
@@ -483,13 +526,14 @@ export default function ProfilePage() {
                                                 name="gender"
                                                 value={formData.gender}
                                                 onChange={handleInputChange}
-                                                className="form-input"
+                                                className={inputClass('gender')}
                                             >
                                                 <option value="">Select gender</option>
                                                 <option value="male">Male</option>
                                                 <option value="female">Female</option>
                                                 <option value="other">Other</option>
                                             </select>
+                                            {getFieldError('gender') && <div className="field-error">{getFieldError('gender')}</div>}
                                         </div>
                                         <div className="form-group">
                                             <label htmlFor="sexual_preference">Sexual Preference:</label>
@@ -498,13 +542,14 @@ export default function ProfilePage() {
                                                 name="sexual_preference"
                                                 value={formData.sexual_preference}
                                                 onChange={handleInputChange}
-                                                className="form-input"
+                                                className={inputClass('sexual_preference')}
                                             >
                                                 <option value="">Select preference</option>
                                                 <option value="male">Male</option>
                                                 <option value="female">Female</option>
                                                 <option value="both">Both</option>
                                             </select>
+                                            {getFieldError('sexual_preference') && <div className="field-error">{getFieldError('sexual_preference')}</div>}
                                         </div>
                                         <div className="form-group">
                                             <label htmlFor="biography">Biography:</label>
@@ -513,9 +558,10 @@ export default function ProfilePage() {
                                                 name="biography"
                                                 value={formData.biography}
                                                 onChange={handleInputChange}
-                                                className="form-input textarea"
+                                                className={inputClass('biography')}
                                                 rows={4}
                                             />
+                                            {getFieldError('biography') && <div className="field-error">{getFieldError('biography')}</div>}
                                         </div>
                                     </div>
                                 </div>
