@@ -2,37 +2,37 @@
 // This file is shared between frontend and backend
 
 export interface ValidationError {
-  field: string;
-  message?: string;
-  error?: string;
+    field: string;
+    message?: string;
+    error?: string;
 }
 
 export const GENDER_VALUES = ['male', 'female', 'other', 'null'] as const
 
 export function validateGender(gender: unknown): ValidationError | null {
-  if (gender === undefined || gender === null) {
+    if (gender === undefined || gender === null) {
+        return null
+    }
+
+    if (typeof gender !== 'string') {
+        return {
+            field: 'gender',
+            message: 'Gender must be a string',
+            error: 'Gender must be a string',
+        }
+    }
+
+    if (!GENDER_VALUES.includes(gender as any)) {
+        return {
+            field: 'gender',
+            message: `Gender must be one of: ${GENDER_VALUES.join(', ')}`,
+            error: `Gender must be one of: ${GENDER_VALUES.join(', ')}`,
+        }
+    }
+
     return null
-  }
-
-  if (typeof gender !== 'string') {
-    return {
-      field: 'gender',
-      message: 'Gender must be a string',
-      error: 'Gender must be a string',
-    }
-  }
-
-  if (!GENDER_VALUES.includes(gender as any)) {
-    return {
-      field: 'gender',
-      message: `Gender must be one of: ${GENDER_VALUES.join(', ')}`,
-      error: `Gender must be one of: ${GENDER_VALUES.join(', ')}`,
-    }
-  }
-
-  return null
 }
 
 export function getValidationRulesDescription(): string {
-  return `Gender must be one of: ${GENDER_VALUES.join(', ')}`
+    return `Gender must be one of: ${GENDER_VALUES.join(', ')}`
 }

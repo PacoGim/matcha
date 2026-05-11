@@ -92,10 +92,11 @@ userRoute.post("/user/register", async (req, res) => {
     try {
         const { email, username, password, first_name, last_name } = req.body
 
+        const validationErrors: { field: string; error: string }[] = []
         // Validate username
         const usernameError = validateUsername(username)
         if (usernameError) {
-            return res.status(400).json({ 
+            validationErrors.push({ 
                 error: usernameError.message,
                 field: usernameError.field 
             })
@@ -104,7 +105,7 @@ userRoute.post("/user/register", async (req, res) => {
         // Validate first_name
         const firstNameError = validateName(first_name, 'first_name')
         if (firstNameError) {
-            return res.status(400).json({ 
+            validationErrors.push({ 
                 error: firstNameError.message,
                 field: firstNameError.field 
             })
@@ -113,7 +114,7 @@ userRoute.post("/user/register", async (req, res) => {
         // Validate last_name
         const lastNameError = validateName(last_name, 'last_name')
         if (lastNameError) {
-            return res.status(400).json({ 
+            validationErrors.push({ 
                 error: lastNameError.message,
                 field: lastNameError.field 
             })
@@ -122,10 +123,14 @@ userRoute.post("/user/register", async (req, res) => {
         // Validate password
         const passwordError = validatePassword(password)
         if (passwordError) {
-            return res.status(400).json({ 
+            validationErrors.push({ 
                 error: passwordError.message,
                 field: passwordError.field 
             })
+        }
+
+        if (validationErrors.length > 0) {
+            return res.status(400).json({ errors: validationErrors })
         }
 
         const hashedPassword = await hash(password, 10)
