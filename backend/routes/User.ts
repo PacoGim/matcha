@@ -15,6 +15,10 @@ import { authenticateToken, AuthRequest } from "../middleware/auth"
 import { validateUsername } from "../../frontend/src/validators/usernameValidator"
 import { validateName } from "../../frontend/src/validators/nameValidator"
 import { validatePassword } from "../../frontend/src/validators/passwordValidator"
+import { validateGender } from "../../frontend/src/validators/genderValidator"
+import { validateSexualPreference } from "../../frontend/src/validators/sexualPreferenceValidator"
+import { validateBiography } from "../../frontend/src/validators/biographyValidator"
+import { validateLatitude, validateLongitude, validateAllowGps } from "../../frontend/src/validators/coordinatesValidator"
 
 import nodemailer from "nodemailer"
 
@@ -351,27 +355,52 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
 
         // Validation des champs profile
         if (profileUpdates) {
-            if (profileUpdates.gender && !['male', 'female', 'other', 'null'].includes(profileUpdates.gender)) {
-                validationErrors.push({ field: 'gender', error: 'Invalid gender value' })
+            const genderError = validateGender(profileUpdates.gender)
+            if (genderError) {
+                validationErrors.push({
+                    field: genderError.field,
+                    error: genderError.error ?? genderError.message ?? 'Invalid gender value',
+                })
             }
 
-            if (profileUpdates.sexual_preference && !['male', 'female', 'both'].includes(profileUpdates.sexual_preference)) {
-                validationErrors.push({ field: 'sexual_preference', error: 'Invalid sexual preference value' })
+            const sexualPreferenceError = validateSexualPreference(profileUpdates.sexual_preference)
+            if (sexualPreferenceError) {
+                validationErrors.push({
+                    field: sexualPreferenceError.field,
+                    error: sexualPreferenceError.error ?? sexualPreferenceError.message ?? 'Invalid sexual preference value',
+                })
             }
 
-            if (profileUpdates.latitude !== undefined && (profileUpdates.latitude < -90 || profileUpdates.latitude > 90)) {
-                validationErrors.push({ field: 'latitude', error: 'Latitude must be between -90 and 90' })
+            const latitudeError = validateLatitude(profileUpdates.latitude)
+            if (latitudeError) {
+                validationErrors.push({
+                    field: latitudeError.field,
+                    error: latitudeError.error ?? latitudeError.message ?? 'Invalid latitude value',
+                })
             }
 
-            if (profileUpdates.longitude !== undefined && (profileUpdates.longitude < -180 || profileUpdates.longitude > 180)) {
-                validationErrors.push({ field: 'longitude', error: 'Longitude must be between -180 and 180' })
+            const longitudeError = validateLongitude(profileUpdates.longitude)
+            if (longitudeError) {
+                validationErrors.push({
+                    field: longitudeError.field,
+                    error: longitudeError.error ?? longitudeError.message ?? 'Invalid longitude value',
+                })
             }
-            if (profileUpdates.allow_gps !== undefined && typeof profileUpdates.allow_gps !== 'boolean') {
-                validationErrors.push({ field: 'allow_gps', error: 'allow_gps must be a boolean' })
+
+            const allowGpsError = validateAllowGps(profileUpdates.allow_gps)
+            if (allowGpsError) {
+                validationErrors.push({
+                    field: allowGpsError.field,
+                    error: allowGpsError.error ?? allowGpsError.message ?? 'allow_gps must be a boolean',
+                })
             }
-            const MAX_BIO_LENGTH = 100
-            if (profileUpdates.biography && profileUpdates.biography.length > MAX_BIO_LENGTH) {
-                validationErrors.push({ field: 'biography', error: `Biography cannot exceed ${MAX_BIO_LENGTH} characters` })
+
+            const biographyError = validateBiography(profileUpdates.biography)
+            if (biographyError) {
+                validationErrors.push({
+                    field: biographyError.field,
+                    error: biographyError.error ?? biographyError.message ?? 'Invalid biography value',
+                })
             }
         }
 

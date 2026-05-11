@@ -37,12 +37,12 @@ Content-Type: application/json
 
 {
     "user": {
-        "first_name": "123",
+        "first_name": "Jack",
         "last_name": "Doe"
     },
     "profile": {
-        "gender":"df",
-        "sexual_preference":"fd",
+        "gender":"male",
+        "sexual_preference":"female",
         "biography":"Hello, I'm John Doe!",
         "latitude": 37.7749,
         "longitude": -122.4194,
