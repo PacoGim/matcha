@@ -30,7 +30,7 @@ export default function Login() {
         setLoading(true);
 
         try {
-            
+
             const endpoint_login = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/login`
             const response = await fetch(endpoint_login, {
                 method: 'POST',
@@ -67,6 +67,29 @@ export default function Login() {
         }
     };
 
+    const handleForgotPassword = async () => {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/forgot-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: formData.email }),
+        });
+
+        const data = await response.json();
+        console.log("Forgot password response:", data);
+        if (!response.ok) {
+            setError(data.error || 'Failed to send reset link');
+        } else {
+            setMessage('If an account with that email exists, a reset link has been sent.');
+            setFormData(prev => ({
+                ...prev,
+                email: ''
+            }));
+        }
+
+    }
+
     return (
         <>
             <Navbar />
@@ -99,7 +122,9 @@ export default function Login() {
                                 required
                             />
                         </div>
-
+                        <div className="register-link">
+                            <p>Forgot your password? <button type="button" className="link-button" onClick={() => handleForgotPassword()}>Reset it here</button></p>
+                        </div>
                         <button type="submit" disabled={loading}>
                             {loading ? 'Logging in...' : 'Login'}
                         </button>
