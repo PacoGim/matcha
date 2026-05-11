@@ -33,7 +33,7 @@ userRoute.get("/users", async (req, res) => {
         res.json(result.rows)
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "DB error" })
+        res.status(500).json({ error: "Server error 36" })
     }
 })
 
@@ -80,7 +80,7 @@ userRoute.post("/user/check-email-token", async (req, res) => {
         res.json({ message: "Email verified successfully" })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 78" })
+        res.status(500).json({ error: "Server error 83" })
     }
 })
 
@@ -149,7 +149,7 @@ userRoute.post("/user/register", async (req, res) => {
             res.json({ message: "Registration successful, please check your email to verify your account" })
         }).catch(err => {
             console.error("Error sending email", err);
-            res.status(500).json({ error: "Try again later 106" })
+            res.status(500).json({ error: "Try again later 152" })
         })
 
     } catch (err) {
@@ -174,7 +174,7 @@ userRoute.post("/user/register", async (req, res) => {
             }
         }
         
-        res.status(500).json({ error: "Try again later 111" })
+        res.status(500).json({ error: "Try again later 177" })
     }
 })
 
@@ -228,7 +228,7 @@ userRoute.post("/user/login", async (req, res) => {
         })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 226" })
+        res.status(500).json({ error: "Server error 231" })
     }
 })
 
@@ -242,7 +242,7 @@ userRoute.post("/user/logout", async (req, res) => {
         res.json({ message: "Logout successful" })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 240" })
+        res.status(500).json({ error: "Server error 245" })
     }
 })
 
@@ -290,7 +290,6 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
             username: row.username,
             first_name: row.first_name,
             last_name: row.last_name,
-            is_verified: row.is_verified,
             fame_rating: row.fame_rating,
             created_at: row.user_created_at,
             updated_at: row.user_updated_at,
@@ -308,7 +307,266 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
         res.json({user, profile})
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 264" })
+        res.status(500).json({ error: "Server error 311" })
+    }
+})
+
+userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+        const userId = req.user?.id
+
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" })
+        }
+
+        const { user: userUpdates, profile: profileUpdates } = req.body
+
+        // Validation des champs user
+        const validationErrors: { field: string; error: string }[] = []
+
+        if (userUpdates) {
+            if (userUpdates.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userUpdates.email)) {
+                validationErrors.push({ field: 'email', error: 'Invalid email format' })
+            }
+
+            if (userUpdates.first_name) {
+                const firstNameError = validateName(userUpdates.first_name, 'first_name')
+                if (firstNameError) {
+                    validationErrors.push({ field: firstNameError.field, error: firstNameError.message })
+                }
+            }
+
+            if (userUpdates.last_name) {
+                const lastNameError = validateName(userUpdates.last_name, 'last_name')
+                if (lastNameError) {
+                    validationErrors.push({ field: lastNameError.field, error: lastNameError.message })
+                }
+            }
+
+            // Username ne peut pas être modifié
+            if (userUpdates.username) {
+                validationErrors.push({ field: 'username', error: 'Username cannot be modified' })
+            }
+        }
+
+        // Validation des champs profile
+        if (profileUpdates) {
+            if (profileUpdates.gender && !['male', 'female', 'other', 'null'].includes(profileUpdates.gender)) {
+                validationErrors.push({ field: 'gender', error: 'Invalid gender value' })
+            }
+
+            if (profileUpdates.sexual_preference && !['male', 'female', 'both'].includes(profileUpdates.sexual_preference)) {
+                validationErrors.push({ field: 'sexual_preference', error: 'Invalid sexual preference value' })
+            }
+
+            if (profileUpdates.latitude !== undefined && (profileUpdates.latitude < -90 || profileUpdates.latitude > 90)) {
+                validationErrors.push({ field: 'latitude', error: 'Latitude must be between -90 and 90' })
+            }
+
+            if (profileUpdates.longitude !== undefined && (profileUpdates.longitude < -180 || profileUpdates.longitude > 180)) {
+                validationErrors.push({ field: 'longitude', error: 'Longitude must be between -180 and 180' })
+            }
+            if (profileUpdates.allow_gps !== undefined && typeof profileUpdates.allow_gps !== 'boolean') {
+                validationErrors.push({ field: 'allow_gps', error: 'allow_gps must be a boolean' })
+            }
+            const MAX_BIO_LENGTH = 100
+            if (profileUpdates.biography && profileUpdates.biography.length > MAX_BIO_LENGTH) {
+                validationErrors.push({ field: 'biography', error: `Biography cannot exceed ${MAX_BIO_LENGTH} characters` })
+            }
+        }
+
+        if (validationErrors.length > 0) {
+            return res.status(400).json({ errors: validationErrors })
+        }
+
+        const client = await db.getPool().connect()
+
+        try {
+            await client.query('BEGIN')
+
+            // Mise à jour de l'utilisateur
+            if (userUpdates && Object.keys(userUpdates).length > 0) {
+                const updateFields = []
+                const values = []
+                let paramIndex = 1
+
+                if (userUpdates.email) {
+                    updateFields.push(`email = $${paramIndex++}`)
+                    values.push(userUpdates.email)
+                }
+                if (userUpdates.first_name) {
+                    updateFields.push(`first_name = $${paramIndex++}`)
+                    values.push(userUpdates.first_name)
+                }
+                if (userUpdates.last_name) {
+                    updateFields.push(`last_name = $${paramIndex++}`)
+                    values.push(userUpdates.last_name)
+                }
+
+                if (updateFields.length > 0) {
+                    updateFields.push(`updated_at = NOW()`)
+                    values.push(userId)
+                    const updateQuery = `UPDATE users SET ${updateFields.join(', ')} WHERE id = $${paramIndex}`
+                    await client.query(updateQuery, values)
+                }
+            }
+
+            // Mise à jour ou insertion du profil
+            if (profileUpdates && Object.keys(profileUpdates).length > 0) {
+                // Vérifier si le profil existe
+                const profileExists = await client.query('SELECT user_id FROM profiles WHERE user_id = $1', [userId])
+
+                if (profileExists.rows.length > 0) {
+                    // Mise à jour
+                    const updateFields = []
+                    const values = []
+                    let paramIndex = 1
+
+                    if (profileUpdates.gender !== undefined) {
+                        updateFields.push(`gender = $${paramIndex++}`)
+                        values.push(profileUpdates.gender)
+                    }
+                    if (profileUpdates.sexual_preference !== undefined) {
+                        updateFields.push(`sexual_preference = $${paramIndex++}`)
+                        values.push(profileUpdates.sexual_preference)
+                    }
+                    if (profileUpdates.biography !== undefined) {
+                        updateFields.push(`biography = $${paramIndex++}`)
+                        values.push(profileUpdates.biography)
+                    }
+                    if (profileUpdates.location !== undefined) {
+                        updateFields.push(`location = $${paramIndex++}`)
+                        values.push(profileUpdates.location)
+                    }
+                    if (profileUpdates.latitude !== undefined) {
+                        updateFields.push(`latitude = $${paramIndex++}`)
+                        values.push(profileUpdates.latitude)
+                    }
+                    if (profileUpdates.longitude !== undefined) {
+                        updateFields.push(`longitude = $${paramIndex++}`)
+                        values.push(profileUpdates.longitude)
+                    }
+                    if (profileUpdates.allow_gps !== undefined) {
+                        updateFields.push(`allow_gps = $${paramIndex++}`)
+                        values.push(profileUpdates.allow_gps)
+                    }
+
+                    if (updateFields.length > 0) {
+                        updateFields.push(`updated_at = NOW()`)
+                        values.push(userId)
+                        const updateQuery = `UPDATE profiles SET ${updateFields.join(', ')} WHERE user_id = $${paramIndex}`
+                        await client.query(updateQuery, values)
+                    }
+                } else {
+                    // Insertion
+                    const insertFields = ['user_id']
+                    const placeholders = ['$1']
+                    const values = [userId]
+                    let paramIndex = 2
+
+                    if (profileUpdates.gender !== undefined) {
+                        insertFields.push('gender')
+                        placeholders.push(`$${paramIndex++}`)
+                        values.push(profileUpdates.gender)
+                    }
+                    if (profileUpdates.sexual_preference !== undefined) {
+                        insertFields.push('sexual_preference')
+                        placeholders.push(`$${paramIndex++}`)
+                        values.push(profileUpdates.sexual_preference)
+                    }
+                    if (profileUpdates.biography !== undefined) {
+                        insertFields.push('biography')
+                        placeholders.push(`$${paramIndex++}`)
+                        values.push(profileUpdates.biography)
+                    }
+                    if (profileUpdates.location !== undefined) {
+                        insertFields.push('location')
+                        placeholders.push(`$${paramIndex++}`)
+                        values.push(profileUpdates.location)
+                    }
+                    if (profileUpdates.latitude !== undefined) {
+                        insertFields.push('latitude')
+                        placeholders.push(`$${paramIndex++}`)
+                        values.push(profileUpdates.latitude)
+                    }
+                    if (profileUpdates.longitude !== undefined) {
+                        insertFields.push('longitude')
+                        placeholders.push(`$${paramIndex++}`)
+                        values.push(profileUpdates.longitude)
+                    }
+                    if (profileUpdates.allow_gps !== undefined) {
+                        insertFields.push('allow_gps')
+                        placeholders.push(`$${paramIndex++}`)
+                        values.push(profileUpdates.allow_gps)
+                    }
+
+                    const insertQuery = `INSERT INTO profiles (${insertFields.join(', ')}) VALUES (${placeholders.join(', ')})`
+                    await client.query(insertQuery, values)
+                }
+            }
+
+            await client.query('COMMIT')
+
+            // Retourner le profil mis à jour
+            const result = await client.query(
+                `SELECT
+                    u.id AS user_id,
+                    u.email,
+                    u.username,
+                    u.first_name,
+                    u.last_name,
+                    u.is_verified,
+                    u.fame_rating,
+                    u.created_at AS user_created_at,
+                    u.updated_at AS user_updated_at,
+                    p.gender,
+                    p.sexual_preference,
+                    p.biography,
+                    p.location,
+                    p.latitude,
+                    p.longitude,
+                    p.allow_gps,
+                    p.created_at AS profile_created_at,
+                    p.updated_at AS profile_updated_at
+                FROM users u
+                LEFT JOIN profiles p ON u.id = p.user_id
+                WHERE u.id = $1;`,
+                [userId]
+            )
+
+            const row = result.rows[0]
+            const user = {
+                email: row.email,
+                username: row.username,
+                first_name: row.first_name,
+                last_name: row.last_name,
+                is_verified: row.is_verified,
+                fame_rating: row.fame_rating,
+                created_at: row.user_created_at,
+                updated_at: row.user_updated_at,
+            }
+            const profile = {
+                gender: row.gender,
+                sexual_preference: row.sexual_preference,
+                biography: row.biography,
+                location: row.location,
+                latitude: row.latitude,
+                longitude: row.longitude,
+                allow_gps: row.allow_gps,
+            }
+
+            res.json({ user, profile })
+
+        } catch (dbError) {
+            await client.query('ROLLBACK')
+            throw dbError
+        } finally {
+            client.release()
+        }
+
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Server error 563" })
     }
 })
 

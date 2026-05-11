@@ -23,3 +23,29 @@ Content-Type: application/json
     "email": "tipton.bakary@forliion.com",
     "password": "password123"
 }
+
+
+###
+GET	http://10.171.62.221:4242/user/profile
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdhNzI4MTQ2LTk2OTktNDU5NS1iN2I1LTcwMDZlNzg3MDgyOCIsImVtYWlsIjoic29nZXJlazEyNkBiYWRnZXJob2xlLmNvbSIsInVzZXJuYW1lIjoic29nZXJlazEyNiIsImlhdCI6MTc3ODQ4NTkwNiwiZXhwIjoxNzc4NTcyMzA2fQ.-I8BT36XA_S9m5fb7xb7Dq_XTBXlhHtEkyLNp3g90W8
+
+
+###
+PUT	http://10.171.62.221:4242/user/profile
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdhNzI4MTQ2LTk2OTktNDU5NS1iN2I1LTcwMDZlNzg3MDgyOCIsImVtYWlsIjoic29nZXJlazEyNkBiYWRnZXJob2xlLmNvbSIsInVzZXJuYW1lIjoic29nZXJlazEyNiIsImlhdCI6MTc3ODQ4NTkwNiwiZXhwIjoxNzc4NTcyMzA2fQ.-I8BT36XA_S9m5fb7xb7Dq_XTBXlhHtEkyLNp3g90W8
+Content-Type: application/json
+
+{
+    "user": {
+        "first_name": "123",
+        "last_name": "Doe"
+    },
+    "profile": {
+        "gender":"df",
+        "sexual_preference":"fd",
+        "biography":"Hello, I'm John Doe!",
+        "latitude": 37.7749,
+        "longitude": -122.4194,
+        "allow_gps": true
+    }
+}
