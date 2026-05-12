@@ -37,7 +37,7 @@ userRoute.get("/users", async (req, res) => {
         res.json(result.rows)
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 36" })
+        res.status(500).json({ error: "Server error 40" })
     }
 })
 
@@ -89,7 +89,7 @@ userRoute.post("/user/check-email-token", async (req, res) => {
         res.json({ message: new_email ? "Email updated successfully" : "Email verified successfully" })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 83" })
+        res.status(500).json({ error: "Server error 92" })
     }
 })
 
@@ -101,36 +101,36 @@ userRoute.post("/user/register", async (req, res) => {
         // Validate username
         const usernameError = validateUsername(username)
         if (usernameError) {
-            validationErrors.push({ 
+            validationErrors.push({
                 error: usernameError.message,
-                field: usernameError.field 
+                field: usernameError.field
             })
         }
 
         // Validate first_name
         const firstNameError = validateName(first_name, 'first_name')
         if (firstNameError) {
-            validationErrors.push({ 
+            validationErrors.push({
                 error: firstNameError.message,
-                field: firstNameError.field 
+                field: firstNameError.field
             })
         }
 
         // Validate last_name
         const lastNameError = validateName(last_name, 'last_name')
         if (lastNameError) {
-            validationErrors.push({ 
+            validationErrors.push({
                 error: lastNameError.message,
-                field: lastNameError.field 
+                field: lastNameError.field
             })
         }
 
         // Validate password
         const passwordError = validatePassword(password)
         if (passwordError) {
-            validationErrors.push({ 
+            validationErrors.push({
                 error: passwordError.message,
-                field: passwordError.field 
+                field: passwordError.field
             })
         }
 
@@ -168,26 +168,26 @@ userRoute.post("/user/register", async (req, res) => {
 
     } catch (err) {
         console.error("user.ts registration error", err)
-        
+
         // Check for database constraint errors
         if (err instanceof Error) {
             const errorMessage = err.message.toLowerCase()
-            
+
             if (errorMessage.includes('username') && errorMessage.includes('unique')) {
-                return res.status(400).json({ 
+                return res.status(400).json({
                     error: 'Username already taken',
                     field: 'username'
                 })
             }
-            
+
             if (errorMessage.includes('email') && errorMessage.includes('unique')) {
-                return res.status(400).json({ 
+                return res.status(400).json({
                     error: 'Email already registered',
                     field: 'email'
                 })
             }
         }
-        
+
         res.status(500).json({ error: "Try again later 177" })
     }
 })
@@ -242,7 +242,7 @@ userRoute.post("/user/login", async (req, res) => {
         })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 231" })
+        res.status(500).json({ error: "Server error 245" })
     }
 })
 
@@ -285,7 +285,7 @@ userRoute.post("/user/forgot-password", async (req, res) => {
         res.json({ message: "If an account with that email exists, a password reset link has been sent." })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 245" })
+        res.status(500).json({ error: "Server error 288" })
     }
 })
 
@@ -336,7 +336,7 @@ userRoute.post("/user/reset-password", async (req, res) => {
         res.json({ message: "Password has been reset successfully" })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 246" })
+        res.status(500).json({ error: "Server error 339" })
     }
 })
 
@@ -368,7 +368,7 @@ userRoute.post("/user/password", authenticateToken, async (req: AuthRequest, res
         res.json({ message: "Password updated successfully" })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 247" })
+        res.status(500).json({ error: "Server error 371" })
     }
 })
 
@@ -382,9 +382,164 @@ userRoute.post("/user/logout", async (req, res) => {
         res.json({ message: "Logout successful" })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 245" })
+        res.status(500).json({ error: "Server error 385" })
     }
 })
+
+userRoute.get(
+    "/user/nearby",
+    authenticateToken,
+    async (req: AuthRequest, res) => {
+        try {
+            const userId = req.user?.id;
+
+            if (!userId) {
+                return res.status(401).json({
+                    error: "Unauthorized",
+                });
+            }
+
+            const currentResult = await db.getPool().query(
+                `
+                SELECT
+                    u.id,
+                    p.gender,
+                    p.sexual_preference,
+                    p.allow_gps,
+                    p.coordinates,
+                    ST_Y(p.coordinates::geometry) AS latitude,
+                    ST_X(p.coordinates::geometry) AS longitude
+                FROM users u
+                JOIN profiles p
+                    ON u.id = p.user_id
+                WHERE u.id = $1
+                `,
+                [userId]
+            );
+
+            if (!currentResult.rows.length) {
+                return res.status(404).json({
+                    error: "User not found",
+                });
+            }
+
+            const current = currentResult.rows[0];
+
+            if (!current.allow_gps || !current.coordinates) {
+                return res.status(400).json({
+                    error:
+                        "Current user location is required and GPS must be allowed",
+                });
+            }
+
+            const maxDistanceKm =
+                Number(req.query.max_distance) || 50;
+
+            const maxDistanceMeters =
+                maxDistanceKm * 1000;
+
+            const currentGender =
+                current.gender ?? null;
+
+            const currentPreference =
+                current.sexual_preference ?? "both";
+
+            const nearbyQuery = `
+                SELECT
+                    u.id,
+                    u.username,
+                    u.first_name,
+                    u.last_name,
+
+                    p.gender,
+                    p.sexual_preference,
+                    p.biography,
+                    p.location,
+                    p.allow_gps,
+
+                    ST_Y(p.coordinates::geometry) AS latitude,
+                    ST_X(p.coordinates::geometry) AS longitude,
+
+                    ROUND(
+                        (
+                            ST_Distance(
+                                p.coordinates,
+                                $1
+                            ) / 1000
+                        )::numeric,
+                        2
+                    ) AS distance_km
+
+                FROM users u
+
+                JOIN profiles p
+                    ON u.id = p.user_id
+
+                WHERE u.id != $2
+
+                    AND p.allow_gps = true
+
+                    AND p.coordinates IS NOT NULL
+
+                    AND p.gender::text != 'null'
+
+                    AND (
+                            $3 = 'both'
+                            OR p.gender::text = $3
+                    )
+
+                    AND (
+                            $4::text IS NULL
+                            OR p.sexual_preference::text = 'both'
+                            OR p.sexual_preference::text = $4::text
+                    )
+
+                    AND ST_DWithin(
+                            p.coordinates,
+                            $1,
+                            $5
+                    )
+
+                ORDER BY ST_Distance(
+                    p.coordinates,
+                    $1
+                )
+
+                LIMIT 20;
+            `;
+
+            const nearbyResult =
+                await db.getPool().query(
+                    nearbyQuery,
+                    [
+                        current.coordinates,
+                        userId,
+                        currentPreference,
+                        currentGender,
+                        maxDistanceMeters,
+                    ]
+                );
+
+            return res.json({
+                current_location: {
+                    latitude: current.latitude,
+                    longitude: current.longitude,
+                },
+
+                max_distance_km: maxDistanceKm,
+
+                users: nearbyResult.rows,
+            });
+
+        } catch (err) {
+            console.error(err);
+
+            return res.status(500).json({
+                error: "Server error 631",
+            });
+        }
+    }
+);
 
 userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) => {
     try {
@@ -409,8 +564,8 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
                 p.sexual_preference,
                 p.biography,
                 p.location,
-                p.latitude,
-                p.longitude,
+                ST_Y(p.coordinates::geometry) AS latitude,
+                ST_X(p.coordinates::geometry) AS longitude,
                 p.allow_gps,
                 p.created_at AS profile_created_at,
                 p.updated_at AS profile_updated_at
@@ -434,7 +589,7 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
             created_at: row.user_created_at,
             updated_at: row.user_updated_at,
         }
-        const profile = {   
+        const profile = {
             gender: row.gender,
             sexual_preference: row.sexual_preference,
             biography: row.biography,
@@ -444,10 +599,10 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
             allow_gps: row.allow_gps,
         }
 
-        res.json({user, profile})
+        res.json({ user, profile })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 311" })
+        res.status(500).json({ error: "Server error 450" })
     }
 })
 
@@ -634,6 +789,30 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
                         updateFields.push(`allow_gps = $${paramIndex++}`)
                         values.push(profileUpdates.allow_gps)
                     }
+                    const nextLatitude =
+                    profileUpdates.latitude !== undefined
+                        ? profileUpdates.latitude
+                        : null
+
+                    const nextLongitude =
+                        profileUpdates.longitude !== undefined
+                            ? profileUpdates.longitude
+                            : null
+
+                    if (nextLatitude !== null && nextLongitude !== null) {
+                        updateFields.push(`
+                            coordinates =
+                            ST_SetSRID(
+                                ST_MakePoint($${paramIndex + 1}, $${paramIndex}),
+                                4326
+                            )::geography
+                        `)
+
+                        values.push(nextLatitude)
+                        values.push(nextLongitude)
+
+                        paramIndex += 2
+                    }
 
                     if (updateFields.length > 0) {
                         updateFields.push(`updated_at = NOW()`)
@@ -682,6 +861,24 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
                         insertFields.push('allow_gps')
                         placeholders.push(`$${paramIndex++}`)
                         values.push(profileUpdates.allow_gps)
+                    }
+                    if (
+                        profileUpdates.latitude !== undefined &&
+                        profileUpdates.longitude !== undefined
+                    ) {
+                        insertFields.push('coordinates')
+
+                        placeholders.push(`
+                            ST_SetSRID(
+                                ST_MakePoint($${paramIndex + 1}, $${paramIndex}),
+                                4326
+                            )::geography
+                        `)
+
+                        values.push(profileUpdates.latitude)
+                        values.push(profileUpdates.longitude)
+
+                        paramIndex += 2
                     }
 
                     const insertQuery = `INSERT INTO profiles (${insertFields.join(', ')}) VALUES (${placeholders.join(', ')})`
@@ -739,8 +936,8 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
                     p.sexual_preference,
                     p.biography,
                     p.location,
-                    p.latitude,
-                    p.longitude,
+                    ST_Y(p.coordinates::geometry) AS latitude,
+                    ST_X(p.coordinates::geometry) AS longitude,
                     p.allow_gps,
                     p.created_at AS profile_created_at,
                     p.updated_at AS profile_updated_at
@@ -790,7 +987,7 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
 
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: "Server error 563" })
+        res.status(500).json({ error: "Server error 886" })
     }
 })
 

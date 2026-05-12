@@ -1,31 +1,42 @@
-### profile/:id
-GET http://10.171.62.221:3000/profile/8fbde9c9-1e9a-486e-8ca6-6cfb3bef0f78
+@backend_host=10.171.56.105
+@backend_port=4242
+@baseUrl=http://{{backend_host}}:{{backend_port}}
 
 
 
-### user/register 9da9cd24-e696-420b-8d36-97c6970602b5
-POST http://10.171.62.221:4242/user/register
+###
+POST {{baseUrl}}/user/register
 Content-Type: application/json
 
 {
     "email": "hired79133@cadinr.com",
     "username": "hired79133",
     "password": "password123",
-    "first_name": "123",
+    "first_name": "adf",
     "last_name": "456"
 }
 
 ###
-POST http://10.171.62.221:4242/user/login
+POST {{baseUrl}}/user/login
 Content-Type: application/json
 
 {
-    "email": "sogerek126@badgerhole.com",
-    "password": "Bobby@123"
+    "email": "b@b.b",
+    "password": "bob"
 }
 
+
 ###
-POST http://10.171.62.221:4242/user/forgot-password
+GET	{{baseUrl}}/user/profile
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk0ZjkzNTgyLTUyNWUtNGIwNS1iNTAzLWMzZjU1YWU3OTBhOCIsImVtYWlsIjoiYkBiLmIiLCJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc3ODU4MjI1NSwiZXhwIjoxNzc4NjY4NjU1fQ.2-VevIpSoYQL3bmmW8dvc8GQCziq3fycwAvVdDlJPnE
+
+###
+GET {{baseUrl}}/user/nearby?max_distance=40
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk0ZjkzNTgyLTUyNWUtNGIwNS1iNTAzLWMzZjU1YWU3OTBhOCIsImVtYWlsIjoiYkBiLmIiLCJ1c2VybmFtZSI6ImJvYiIsImlhdCI6MTc3ODU4MjI1NSwiZXhwIjoxNzc4NjY4NjU1fQ.2-VevIpSoYQL3bmmW8dvc8GQCziq3fycwAvVdDlJPnE
+
+
+###
+POST {{baseUrl}}/user/forgot-password
 Content-Type: application/json
 
 {
@@ -33,7 +44,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://10.171.62.221:4242/user/reset-password
+POST {{baseUrl}}/user/reset-password
 Content-Type: application/json
 
 {
@@ -42,7 +53,7 @@ Content-Type: application/json
 }
 
 ###
-PUT http://10.171.62.221:4242/user/password
+POST {{baseUrl}}/user/password
 Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImY3MGNhNDdhLWE2YmMtNGM3Ni1hZjg5LTZiODJmOTU0NzI4NyIsImVtYWlsIjoic29nZXJlazEyNkBiYWRnZXJob2xlLmNvbSIsInVzZXJuYW1lIjoiYm9iIiwiaWF0IjoxNzc4NTAxNDUyLCJleHAiOjE3Nzg1ODc4NTJ9.sC35yrk6_lEkkwXtvM1U1g1Z7H1F82gsyMEpyv5l14I
 Content-Type: application/json
 
@@ -51,13 +62,9 @@ Content-Type: application/json
     "new_password": "PoQ456@123"
 }
 
-###
-GET	http://10.171.62.221:4242/user/profile
-Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdhNzI4MTQ2LTk2OTktNDU5NS1iN2I1LTcwMDZlNzg3MDgyOCIsImVtYWlsIjoic29nZXJlazEyNkBiYWRnZXJob2xlLmNvbSIsInVzZXJuYW1lIjoic29nZXJlazEyNiIsImlhdCI6MTc3ODQ4NTkwNiwiZXhwIjoxNzc4NTcyMzA2fQ.-I8BT36XA_S9m5fb7xb7Dq_XTBXlhHtEkyLNp3g90W8
-
 
 ###
-PUT	http://10.171.62.221:4242/user/profile
+PUT	{{baseUrl}}/user/profile
 Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdhNzI4MTQ2LTk2OTktNDU5NS1iN2I1LTcwMDZlNzg3MDgyOCIsImVtYWlsIjoic29nZXJlazEyNkBiYWRnZXJob2xlLmNvbSIsInVzZXJuYW1lIjoic29nZXJlazEyNiIsImlhdCI6MTc3ODQ4NTkwNiwiZXhwIjoxNzc4NTcyMzA2fQ.-I8BT36XA_S9m5fb7xb7Dq_XTBXlhHtEkyLNp3g90W8
 Content-Type: application/json
 
@@ -74,12 +81,4 @@ Content-Type: application/json
         "longitude": -122.4194,
         "allow_gps": true
     }
-}
-
-###
-POST http://10.171.62.221:4242/user/forgot-password
-Content-Type: application/json
-
-{
-    "email": "sogerek126@badgerhole.com"
 }

@@ -97,6 +97,7 @@ print('INSERT INTO users (email, username, password_hash, first_name, last_name,
 print(',\n'.join(users_values))
 print('ON CONFLICT (email) DO NOTHING;')
 
+<<<<<<< HEAD
 print()
 print('INSERT INTO profiles (user_id, gender, sexual_preference, biography, location, latitude, longitude)')
 print('SELECT u.id, v.gender::gender, v.pref::sexual_pref, v.bio, v.location, v.lat::double precision, v.lon::double precision')
@@ -115,6 +116,46 @@ print('    longitude = EXCLUDED.longitude,')
 print('    updated_at = NOW();')
 PY
 )
+=======
+    BIO="Hello, I am user ${i}"
+    LOCATION="Paris"
+
+    echo "[*] Creating user $USERNAME"
+
+    $PSQL <<EOF
+WITH new_user AS (
+    INSERT INTO users (email, username, password_hash, first_name, last_name, is_verified, fame_rating)
+    VALUES (
+        '$EMAIL',
+        '$USERNAME',
+        '\$2b\$10\$S/TOfkABQGcCr.tf3PsBSO9/gVWh6VPT5KV3iCabLrWXRQkxbdBu2',
+        '$FIRSTNAME',
+        '$LASTNAME',
+        TRUE,
+        (RANDOM() * 100)::int
+    )
+    RETURNING id
+)
+INSERT INTO profiles (user_id, gender, sexual_preference, biography, location, latitude, longitude, coordinates, allow_gps)
+SELECT
+    id,
+    '$GENDER',
+    '$PREF',
+    '$BIO',
+    '$LOCATION',
+    lat,
+    lon,
+    ST_SetSRID(ST_MakePoint(lon, lat),4326)::geography,
+    TRUE
+FROM (
+    SELECT
+        id,
+        48.8566 + (RANDOM() - 0.5) * 0.5 AS lat,
+        2.3522 + (RANDOM() - 0.5) * 0.5 AS lon
+    FROM new_user
+) t;
+EOF
+>>>>>>> fc593b0 ((feat) GET /user/nearby?max_distance= , add postgis extension for posgresql to manage gps coordinates)
 
 if [ -z "$SQL_COMMANDS" ]; then
   echo "[!] Failed to fetch random user data."
@@ -162,7 +203,9 @@ INSERT INTO profiles (
     biography,
     location,
     latitude,
-    longitude
+    longitude,
+    coordinates,
+    allow_gps
 )
 SELECT
     id,
@@ -171,6 +214,7 @@ SELECT
     'Hello, I am Bob. I love coding and traveling.',
     'Paris',
     48.8566,
+<<<<<<< HEAD
     2.3522
 FROM user_id
 ON CONFLICT (user_id) DO UPDATE SET
@@ -181,6 +225,15 @@ ON CONFLICT (user_id) DO UPDATE SET
     latitude = EXCLUDED.latitude,
     longitude = EXCLUDED.longitude,
     updated_at = NOW();
+=======
+    2.3522,
+    ST_SetSRID(
+        ST_MakePoint(2.3522, 48.8566),
+        4326
+    )::geography,
+    TRUE
+FROM new_user;
+>>>>>>> fc593b0 ((feat) GET /user/nearby?max_distance= , add postgis extension for posgresql to manage gps coordinates)
 EOF
 
 echo "[✔] Seeding complete."

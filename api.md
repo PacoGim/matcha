@@ -6,7 +6,7 @@
  - [x] POST   /user/check-email
  - [x] POST   /user/forgot-password
  - [x] POST   /user/reset-password
- - PUT	  /user/password
+ - [x] POST	  /user/password
  - [x] GET    /user/profile
  - [x] PUT    /user/profile
 
@@ -40,11 +40,11 @@
 
 ## Search
 
- - GET /search?age_min=&age_max=&location=&fame_min=&tags=
+ - GET /search?location=&fame_min=&tags=
 
 ## Suggestions
 
- - GET /suggestions?sort=age|distance|fame|tags
+ - GET /suggestions?sort=distance|fame|tags
 
 ## Block / Report
 

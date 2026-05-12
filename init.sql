@@ -1,4 +1,6 @@
-CREATE TYPE gender AS ENUM ('male', 'female', 'other', 'null');
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TYPE gender AS ENUM ('male', 'female', 'other');
 CREATE TYPE sexual_pref AS ENUM ('male', 'female', 'both');
 
 CREATE TYPE notification_type AS ENUM (
@@ -41,16 +43,21 @@ CREATE TABLE password_resets (
 
 CREATE TABLE profiles (
     user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    gender gender,
+    gender gender NULL,
     sexual_preference sexual_pref DEFAULT 'both',
     biography TEXT,
     location TEXT,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
+    coordinates GEOGRAPHY(Point, 4326),
     allow_gps BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE INDEX profiles_coordinates_idx
+ON profiles
+USING GIST(coordinates);
 
 CREATE TABLE tags (
     id SERIAL PRIMARY KEY,
