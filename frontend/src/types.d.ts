@@ -6,6 +6,7 @@ export interface User {
   username: string;
   first_name: string;
   last_name: string;
+  age: number;
   is_verified: boolean;
   fame_rating: number;
   created_at: string;
@@ -19,6 +20,7 @@ export interface Profile {
   biography: string;
   location: string;
   latitude: number;
+  age: number;
   longitude: number;
   allow_gps: boolean;
   created_at: string;

@@ -27,7 +27,7 @@ profileRoute.get("/profiles", authenticateToken, async (req: AuthRequest, res) =
         // Get all users with profiles (excluding current user)
         const result = await db.getPool().query(`
             SELECT u.id, u.first_name, u.last_name, u.email, u.username, u.is_verified, u.fame_rating, u.created_at, u.updated_at,
-                   p.gender, p.sexual_preference, p.biography, p.location, p.latitude, p.longitude, p.coordinates, p.allow_gps, p.created_at as profile_created_at, p.updated_at as profile_updated_at
+                   p.gender, p.sexual_preference, DATE_PART('year', AGE(u.birthdate)) AS age, p.biography, p.location, p.latitude, p.longitude, p.coordinates, p.allow_gps, p.created_at as profile_created_at, p.updated_at as profile_updated_at
             FROM users u
             LEFT JOIN profiles p ON u.id = p.user_id
             WHERE u.id != $1 AND p.user_id IS NOT NULL
@@ -43,6 +43,7 @@ profileRoute.get("/profiles", authenticateToken, async (req: AuthRequest, res) =
             last_name: profile.last_name,
             is_verified: profile.is_verified,
             fame_rating: profile.fame_rating,
+            age: profile.age,
             created_at: profile.created_at,
             updated_at: profile.updated_at,
             profile: {

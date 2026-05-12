@@ -51,6 +51,8 @@ export function getCurrentUser(): UserProfile {
 
         first_name: 'Alex',
 
+        age: 30,
+        
         last_name: 'Johnson',
 
         is_verified: true,
@@ -78,6 +80,8 @@ export function getCurrentUser(): UserProfile {
             user_id: 'current-user',
 
             gender: 'male',
+
+            age: 30,
 
             sexual_preference: 'female',
 

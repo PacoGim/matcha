@@ -19,7 +19,7 @@ export default function ProfileCard({
     compact = false,
     gridView = false
 }: ProfileCardProps) {
-    const { first_name, last_name, fame_rating } = profile;
+    const { first_name, age, last_name, fame_rating } = profile;
     const { gender, biography, location, sexual_preference } = profile.profile;
 
     const photos = profile.photos;
@@ -38,11 +38,11 @@ export default function ProfileCard({
     const getPreferenceText = (pref: string) => {
         switch (pref) {
             case 'male':
-                return 'Men';
+                return '♂️';
             case 'female':
-                return 'Women';
+                return '♀️';
             case 'both':
-                return 'All';
+                return '♂️♀️';
             default:
                 return '';
         }
@@ -62,7 +62,8 @@ export default function ProfileCard({
 
                 <div className="profile-grid-content">
                     <div className="profile-info-top">
-                        <h3>{first_name}</h3>
+                        <h2>({age}) {first_name}</h2>
+                        <h2>{getGenderIcon(gender)} ❤️‍🔥 {getPreferenceText(sexual_preference)}</h2>
                     </div>
 
                     <div className="profile-info-bottom">
@@ -90,7 +91,7 @@ export default function ProfileCard({
             <img src={photos.large} alt={`${first_name}`} />
 
             <h3>
-                {first_name} {last_name} {getGenderIcon(gender)}
+                {first_name} {last_name} {getGenderIcon(gender)} ({age})
             </h3>
 
             <p>📍 {location}</p>
