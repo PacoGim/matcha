@@ -8,7 +8,7 @@ DB_PORT=${DB_PORT:-5432}
 DB_NAME=${DB_NAME:-matcha_db}
 DB_USER=${DB_USER:-matcha_user}
 DB_PASSWORD=${DB_PASSWORD:-matcha_password}
-NB_USERS=${NB_USERS:-500}
+NB_USERS=${NB_USERS:-5}
 
 export PGPASSWORD=$DB_PASSWORD
 
@@ -26,7 +26,7 @@ import random
 import math
 import sys
 
-count = int(os.environ.get('NB_USERS', '500'))
+count = int(os.environ.get('NB_USERS', '5'))
 url = f'https://randomuser.me/api/?results={count}&inc=name,email,gender,location,login&nat=us,ca,gb,au&noinfo'
 with urllib.request.urlopen(url, timeout=30) as resp:
     data = json.load(resp)
@@ -97,7 +97,6 @@ print('INSERT INTO users (email, username, password_hash, first_name, last_name,
 print(',\n'.join(users_values))
 print('ON CONFLICT (email) DO NOTHING;')
 
-<<<<<<< HEAD
 print()
 print('INSERT INTO profiles (user_id, gender, sexual_preference, biography, location, latitude, longitude)')
 print('SELECT u.id, v.gender::gender, v.pref::sexual_pref, v.bio, v.location, v.lat::double precision, v.lon::double precision')
@@ -116,7 +115,6 @@ print('    longitude = EXCLUDED.longitude,')
 print('    updated_at = NOW();')
 PY
 )
-=======
     BIO="Hello, I am user ${i}"
     LOCATION="Paris"
 
@@ -155,11 +153,10 @@ FROM (
     FROM new_user
 ) t;
 EOF
->>>>>>> fc593b0 ((feat) GET /user/nearby?max_distance= , add postgis extension for posgresql to manage gps coordinates)
 
 if [ -z "$SQL_COMMANDS" ]; then
-  echo "[!] Failed to fetch random user data."
-  exit 1
+    echo "[!] Failed to fetch random user data."
+    exit 1
 fi
 
 echo "[*] Inserting users and profiles in batch..."
@@ -214,7 +211,6 @@ SELECT
     'Hello, I am Bob. I love coding and traveling.',
     'Paris',
     48.8566,
-<<<<<<< HEAD
     2.3522
 FROM user_id
 ON CONFLICT (user_id) DO UPDATE SET
@@ -225,7 +221,6 @@ ON CONFLICT (user_id) DO UPDATE SET
     latitude = EXCLUDED.latitude,
     longitude = EXCLUDED.longitude,
     updated_at = NOW();
-=======
     2.3522,
     ST_SetSRID(
         ST_MakePoint(2.3522, 48.8566),
@@ -233,7 +228,6 @@ ON CONFLICT (user_id) DO UPDATE SET
     )::geography,
     TRUE
 FROM new_user;
->>>>>>> fc593b0 ((feat) GET /user/nearby?max_distance= , add postgis extension for posgresql to manage gps coordinates)
 EOF
 
 echo "[✔] Seeding complete."
