@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import unauthorized from '../errorHttp/unauthorized';
+import forbidden from '../errorHttp/forbidden';
 
 export interface AuthRequest extends Request {
     user?: {
@@ -14,7 +16,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     console.log('cookies:', req.cookies);
 
     if (!token) {
-        return res.status(401).json({ error: 'Access token required' });
+        return unauthorized(res, 'Access token required');
     }
 
     try {
@@ -22,6 +24,6 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
         req.user = decoded as { id: string; email: string; username: string };
         next();
     } catch (err) {
-        return res.status(403).json({ error: 'Invalid or expired token' });
+        return forbidden(res, 'Invalid or expired token');
     }
 };

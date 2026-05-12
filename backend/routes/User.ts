@@ -22,7 +22,8 @@ import { validateLatitude, validateLongitude, validateAllowGps } from "../../fro
 import { validateBirthdate } from "../../frontend/src/validators/birthdateValidator"
 
 import nodemailer from "nodemailer"
-import { log } from "console"
+import unauthorized from "../errorHttp/unauthorized"
+import internalServerError from "../errorHttp/internalServerError"
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -37,8 +38,7 @@ userRoute.get("/users", async (req, res) => {
         const result = await db.getPool().query("SELECT * FROM users;")
         res.json(result.rows)
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error 40" })
+        return internalServerError(res, err, "Error fetching users")
     }
 })
 
@@ -56,13 +56,13 @@ userRoute.post("/user/check-email-token", async (req, res) => {
         )
 
         if (!result.rows.length) {
-            return res.status(401).json({ error: "Invalid token" })
+            return unauthorized(res, "Invalid token")
         }
 
         const { user_id, new_email, expires_at } = result.rows[0]
 
         if (new Date() > new Date(expires_at)) {
-            return res.status(401).json({ error: "Token expired" })
+            return unauthorized(res, "Token expired")
         }
 
         if (new_email) {
@@ -89,8 +89,7 @@ userRoute.post("/user/check-email-token", async (req, res) => {
 
         res.json({ message: new_email ? "Email updated successfully" : "Email verified successfully" })
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error 92" })
+        return internalServerError(res, err, "Error checking email token")
     }
 })
 
@@ -173,8 +172,7 @@ userRoute.post("/user/register", async (req, res) => {
             )
             res.json({ message: "Registration successful, please check your email to verify your account" })
         }).catch(err => {
-            console.error("Error sending email", err);
-            res.status(500).json({ error: "Try again later 152" })
+            return internalServerError(res, err, "Error sending verification email")
         })
 
     } catch (err) {
@@ -198,8 +196,7 @@ userRoute.post("/user/register", async (req, res) => {
                 })
             }
         }
-
-        res.status(500).json({ error: "Try again later 177" })
+        return internalServerError(res, err, "Error registering user")
     }
 })
 
@@ -210,19 +207,19 @@ userRoute.post("/user/login", async (req, res) => {
         const result = await db.getPool().query("SELECT id, email, username, password_hash, is_verified FROM users WHERE email=$1;", [email])
 
         if (!result.rows.length) {
-            return res.status(401).json({ error: "Invalid credentials" })
+            return unauthorized(res, "Invalid credentials")
         }
 
         const user = result.rows[0]
 
         if (!user.is_verified) {
-            return res.status(401).json({ error: "Please verify your email before logging in" })
+            return unauthorized(res, "Please verify your email before logging in")
         }
 
         const isMatch = await compare(password, user.password_hash)
 
         if (!isMatch) {
-            return res.status(401).json({ error: "Invalid credentials" })
+            return unauthorized(res, "Invalid credentials")
         }
 
         // Generate JWT token
@@ -252,8 +249,7 @@ userRoute.post("/user/login", async (req, res) => {
             }
         })
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error 245" })
+        return internalServerError(res, err, "Error logging in")
     }
 })
 
@@ -295,8 +291,7 @@ userRoute.post("/user/forgot-password", async (req, res) => {
 
         res.json({ message: "If an account with that email exists, a password reset link has been sent." })
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error 288" })
+        return internalServerError(res, err, "Error sending password reset email")
     }
 })
 
@@ -319,12 +314,12 @@ userRoute.post("/user/reset-password", async (req, res) => {
         )
 
         if (!result.rows.length) {
-            return res.status(401).json({ error: "Invalid or expired token" })
+            return unauthorized(res, "Invalid or expired token")
         }
 
         const { user_id, expires_at } = result.rows[0]
         if (new Date() > new Date(expires_at)) {
-            return res.status(401).json({ error: "Invalid or expired token" })
+            return unauthorized(res, "Invalid or expired token")
         }
 
         const userResult = await db.getPool().query("SELECT password_hash FROM users WHERE id = $1;", [user_id])
@@ -346,8 +341,7 @@ userRoute.post("/user/reset-password", async (req, res) => {
 
         res.json({ message: "Password has been reset successfully" })
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error 339" })
+        return internalServerError(res, err, "Error resetting password")
     }
 })
 
@@ -356,7 +350,7 @@ userRoute.post("/user/password", authenticateToken, async (req: AuthRequest, res
         const userId = req.user?.id
 
         if (!userId) {
-            return res.status(401).json({ error: "Unauthorized" })
+            return unauthorized(res, "Unauthorized")
         }
 
         const { new_password } = req.body
@@ -378,8 +372,7 @@ userRoute.post("/user/password", authenticateToken, async (req: AuthRequest, res
 
         res.json({ message: "Password updated successfully" })
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error 371" })
+        return internalServerError(res, err, "Error updating password")
     }
 })
 
@@ -392,8 +385,7 @@ userRoute.post("/user/logout", async (req, res) => {
         })
         res.json({ message: "Logout successful" })
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error 385" })
+        return internalServerError(res, err, "Error logging out")
     }
 })
 
@@ -405,9 +397,7 @@ userRoute.get(
             const userId = req.user?.id;
 
             if (!userId) {
-                return res.status(401).json({
-                    error: "Unauthorized",
-                });
+                return unauthorized(res, "Unauthorized")
             }
 
             const currentResult = await db.getPool().query(
@@ -543,11 +533,7 @@ userRoute.get(
             });
 
         } catch (err) {
-            console.error(err);
-
-            return res.status(500).json({
-                error: "Server error 631",
-            });
+            return internalServerError(res, err, "Error finding nearby users");
         }
     }
 );
@@ -557,7 +543,7 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
         const userId = req.user?.id
 
         if (!userId) {
-            return res.status(401).json({ error: "Unauthorized" })
+            return unauthorized(res, "Unauthorized")
         }
 
         const result = await db.getPool().query(
@@ -614,8 +600,7 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
 
         res.json({ user, profile })
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error 450" })
+        return internalServerError(res, err, "Error fetching user profile")
     }
 })
 
@@ -624,7 +609,7 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
         const userId = req.user?.id
 
         if (!userId) {
-            return res.status(401).json({ error: "Unauthorized" })
+            return unauthorized(res, "Unauthorized")
         }
 
         const { user: userUpdates, profile: profileUpdates } = req.body
@@ -999,8 +984,7 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
         }
 
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error 886" })
+        return internalServerError(res, err, "Error updating user profile")
     }
 })
 

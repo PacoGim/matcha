@@ -1,6 +1,8 @@
 import { Router } from "express"
 import db from "../database/db"
 import { authenticateToken, AuthRequest } from "../middleware/auth"
+import unauthorized from "../errorHttp/unauthorized"
+import internalServerError from "../errorHttp/internalServerError"
 
 const profileRoute = Router()
 
@@ -10,8 +12,7 @@ profileRoute.get("/profile/:id", async (req, res) => {
         const result = await db.getPool().query("SELECT email,username,first_name,last_name,created_at FROM profiles WHERE user_id=$1;", [userId])
         res.json(result.rows)
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "DB error" })
+        return internalServerError(res, err, "Error fetching profile")
     }
 })
 
@@ -19,7 +20,7 @@ profileRoute.get("/profiles", authenticateToken, async (req: AuthRequest, res) =
     try {
         const currentUserId = req.user?.id
         if (!currentUserId) {
-            return res.status(401).json({ error: "User not authenticated" })
+            return unauthorized(res, "User not authenticated")
         }
 
         const count = parseInt(req.query.count as string) || 20
@@ -64,8 +65,7 @@ profileRoute.get("/profiles", authenticateToken, async (req: AuthRequest, res) =
 
         res.json(userProfiles)
     } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Server error" })
+        return internalServerError(res, err, "Error fetching profiles")
     }
 })
 
