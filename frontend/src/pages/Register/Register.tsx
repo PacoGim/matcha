@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar';
 import { validateUsername, getValidationRulesDescription } from '../../validators/usernameValidator';
 import { validateName, getValidationRulesDescription as getNameValidationRulesDescription } from '../../validators/nameValidator';
 import { validatePassword, getValidationRulesDescription as getPasswordValidationRulesDescription } from '../../validators/passwordValidator';
+import { validateBirthdate, getValidationRulesDescription as getBirthValidationRulesDescription } from '../../validators/birthdateValidator';
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -11,7 +12,8 @@ export default function Register() {
         username: '',
         password: '',
         first_name: '',
-        last_name: ''
+        last_name: '',
+        birthdate: ''
     });
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -103,7 +105,8 @@ export default function Register() {
                 username: '',
                 password: '',
                 first_name: '',
-                last_name: ''
+                last_name: '',
+                birthdate: ''
             });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
@@ -174,6 +177,19 @@ export default function Register() {
                             />
                             {fieldErrors.last_name && <span className="field-error">{fieldErrors.last_name}</span>}
                             <span className="field-help">{getNameValidationRulesDescription()}</span>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="birthdate">Birthdate</label>
+                            <input
+                                type="date"
+                                id="birthdate"
+                                name="birthdate"
+                                value={formData.birthdate}
+                                onChange={handleChange}
+                                required
+                            />
+                            {fieldErrors.birthdate && <span className="field-error">{fieldErrors.birthdate}</span>}
+                            <span className="field-help">{getBirthValidationRulesDescription()}</span>
                         </div>
 
                         <div className="form-group">

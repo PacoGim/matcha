@@ -11,6 +11,7 @@ interface User {
     username: string;
     first_name: string;
     last_name: string;
+    age: number;
     is_verified: boolean;
     fame_rating: number;
     created_at: string;
@@ -403,7 +404,7 @@ export default function ProfilePage() {
                                         <div className="info-group">
                                             <div className="info-field">
                                                 <label>Username:</label>
-                                                <span>{user.username}</span>
+                                                <span>{user.username} ({user.age})</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Email:</label>

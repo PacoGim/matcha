@@ -19,6 +19,7 @@ import { validateGender } from "../../frontend/src/validators/genderValidator"
 import { validateSexualPreference } from "../../frontend/src/validators/sexualPreferenceValidator"
 import { validateBiography } from "../../frontend/src/validators/biographyValidator"
 import { validateLatitude, validateLongitude, validateAllowGps } from "../../frontend/src/validators/coordinatesValidator"
+import { validateBirthdate } from "../../frontend/src/validators/birthdateValidator"
 
 import nodemailer from "nodemailer"
 import { log } from "console"
@@ -95,7 +96,7 @@ userRoute.post("/user/check-email-token", async (req, res) => {
 
 userRoute.post("/user/register", async (req, res) => {
     try {
-        const { email, username, password, first_name, last_name } = req.body
+        const { email, username, password, first_name, last_name, birthdate } = req.body
 
         const validationErrors: { field: string; error: string }[] = []
         // Validate username
@@ -134,13 +135,23 @@ userRoute.post("/user/register", async (req, res) => {
             })
         }
 
+        const birthdateError = validateBirthdate(birthdate)
+        {
+            if (birthdateError) {
+                validationErrors.push({
+                    error: birthdateError.message,
+                    field: birthdateError.field
+                })
+            }
+        }
+
         if (validationErrors.length > 0) {
             return res.status(400).json({ errors: validationErrors })
         }
 
         const hashedPassword = await hash(password, 10)
         // console.log("userRegister", req.body, hashedPassword)
-        const result = await db.getPool().query("INSERT INTO users (email, username, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4, $5) RETURNING id;", [email, username, hashedPassword, first_name, last_name])
+        const result = await db.getPool().query("INSERT INTO users (email, username, password_hash, first_name, last_name, birthdate) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;", [email, username, hashedPassword, first_name, last_name, birthdate])
 
         // Generate verification token
         const verificationToken = crypto.randomBytes(32).toString('hex')
@@ -556,6 +567,7 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
                 u.username,
                 u.first_name,
                 u.last_name,
+                DATE_PART('year', AGE(u.birthdate)) AS age,
                 u.is_verified,
                 u.fame_rating,
                 u.created_at AS user_created_at,
@@ -585,6 +597,7 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
             username: row.username,
             first_name: row.first_name,
             last_name: row.last_name,
+            age: row.age,
             fame_rating: row.fame_rating,
             created_at: row.user_created_at,
             updated_at: row.user_updated_at,
