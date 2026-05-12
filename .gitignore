@@ -8,3 +8,4 @@ frontend/build
 .vscode
 backend/ssl/
 !backend/ssl/cert.cnf
+pnpm*.yaml

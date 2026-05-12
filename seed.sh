@@ -1,110 +1,129 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
-# Config (modifiable via variables d'env)
+# Config (modifiable via environment variables)
 DB_HOST=${DB_HOST:-localhost}
 DB_PORT=${DB_PORT:-5432}
 DB_NAME=${DB_NAME:-matcha_db}
 DB_USER=${DB_USER:-matcha_user}
 DB_PASSWORD=${DB_PASSWORD:-matcha_password}
-
+NB_USERS=${NB_USERS:-500}
 
 export PGPASSWORD=$DB_PASSWORD
 
-NB_USERS=50
+PSQL="podman exec -i -e PGPASSWORD=$DB_PASSWORD matcha-db psql -U $DB_USER -d $DB_NAME"
 
 echo "[*] Connecting to $DB_HOST:$DB_PORT..."
+echo "[*] Seeding database with $NB_USERS random users..."
 
-# PSQL="psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -v ON_ERROR_STOP=1"
-PSQL="podman exec -i -e PGPASSWORD=matcha_password matcha-db psql -U matcha_user -d matcha_db"
+echo "[*] Fetching random users from randomuser.me..."
+SQL_COMMANDS=$(python3 <<'PY'
+import json
+import os
+import urllib.request
+import random
+import math
+import sys
 
-echo "[*] Seeding database with $NB_USERS users..."
+count = int(os.environ.get('NB_USERS', '500'))
+url = f'https://randomuser.me/api/?results={count}&inc=name,email,gender,location,login&nat=us,ca,gb,au&noinfo'
+with urllib.request.urlopen(url, timeout=30) as resp:
+    data = json.load(resp)
 
-# Tags
-echo "[*] Creating tags..."
-$PSQL <<EOF
-INSERT INTO tags (name) VALUES
-('music'), ('sports'), ('coding'), ('travel'),
-('food'), ('movies'), ('art'), ('gaming'),
-('fitness'), ('books')
-ON CONFLICT DO NOTHING;
-EOF
+users_values = []
+profiles_data = []
+used_usernames = set()
+used_emails = set()
 
-# Users + profiles
-for i in $(seq 1 $NB_USERS); do
-    EMAIL="user${i}@test.com"
-    USERNAME="user${i}"
-    FIRSTNAME="First${i}"
-    LASTNAME="Last${i}"
+for item in data['results']:
+    email = item['email'].replace("'", "''")
+    
+    # Skip if email already used
+    if email in used_emails:
+        continue
+    used_emails.add(email)
+    
+    username = item['login']['username'].replace("'", "''")
+    
+    # Ensure unique username
+    original_username = username
+    counter = 1
+    while username in used_usernames:
+        username = f"{original_username}{counter}"
+        counter += 1
+    used_usernames.add(username)
+    
+    first = item['name']['first'].replace("'", "''")
+    last = item['name']['last'].replace("'", "''")
+    gender = item['gender']
+    # Ensure gender is valid for ENUM
+    if gender not in ['male', 'female', 'other', 'null']:
+        gender = 'other'
+    
+    city = item['location'].get('city', '')
+    state = item['location'].get('state', '')
+    country = item['location'].get('country', '')
+    location_parts = [p for p in [city, state, country] if p]
+    location = ', '.join(location_parts).replace("'", "''")
+    
+    # Generate random coordinates around Paris (48.8566°N, 2.3522°E) within 25km radius
+    paris_lat = 48.8566
+    paris_lon = 2.3522
+    radius_km = 25
+    
+    # Generate random angle and distance
+    angle = random.uniform(0, 2 * math.pi)
+    distance = random.uniform(0, radius_km)
+    
+    # Convert to lat/lon offsets (1° lat ≈ 111.32 km, 1° lon ≈ 111.32 * cos(lat) km)
+    lat_offset = (distance / 111.32) * math.cos(angle)
+    lon_offset = (distance / (111.32 * math.cos(math.radians(paris_lat)))) * math.sin(angle)
+    
+    latitude = paris_lat + lat_offset
+    longitude = paris_lon + lon_offset
+    
+    # Debug: print coordinates
+    print(f"DEBUG: lat={latitude}, lon={longitude}", file=sys.stderr)
+    
+    pref = random.choice(['male', 'female', 'both'])
+    fame_rating = random.randint(0, 100)
+    bio = f"Hi, I'm {first} from {location or 'somewhere nice'}.".replace("'", "''")
+    
+    users_values.append(f"('{email}', '{username}', 'hashed_password', '{first}', '{last}', TRUE, {fame_rating})")
+    profiles_data.append((email, gender, pref, bio, location, latitude, longitude))
 
-    GENDER=$(shuf -e "male" "female" "other" -n 1)
-    PREF=$(shuf -e "male" "female" "both" -n 1)
+print('INSERT INTO users (email, username, password_hash, first_name, last_name, is_verified, fame_rating) VALUES')
+print(',\n'.join(users_values))
+print('ON CONFLICT (email) DO NOTHING;')
 
-    BIO="Hello, I am user ${i}"
-    LOCATION="Paris"
-
-    echo "[*] Creating user $USERNAME"
-
-    $PSQL <<EOF
-WITH new_user AS (
-    INSERT INTO users (email, username, password_hash, first_name, last_name, is_verified, fame_rating)
-    VALUES (
-        '$EMAIL',
-        '$USERNAME',
-        'hashed_password',
-        '$FIRSTNAME',
-        '$LASTNAME',
-        TRUE,
-        (RANDOM() * 100)::int
-    )
-    RETURNING id
+print()
+print('INSERT INTO profiles (user_id, gender, sexual_preference, biography, location, latitude, longitude)')
+print('SELECT u.id, v.gender::gender, v.pref::sexual_pref, v.bio, v.location, v.lat::double precision, v.lon::double precision')
+print('FROM users u')
+print('JOIN (VALUES')
+values_list = [f"('{email}', '{gender}', '{pref}', '{bio}', '{location}', {latitude}, {longitude})" for email, gender, pref, bio, location, latitude, longitude in profiles_data]
+print(',\n'.join(values_list))
+print(') AS v(email, gender, pref, bio, location, lat, lon) ON u.email = v.email')
+print('ON CONFLICT (user_id) DO UPDATE SET')
+print('    gender = EXCLUDED.gender,')
+print('    sexual_preference = EXCLUDED.sexual_preference,')
+print('    biography = EXCLUDED.biography,')
+print('    location = EXCLUDED.location,')
+print('    latitude = EXCLUDED.latitude,')
+print('    longitude = EXCLUDED.longitude,')
+print('    updated_at = NOW();')
+PY
 )
-INSERT INTO profiles (user_id, gender, sexual_preference, biography, location, latitude, longitude)
-SELECT
-    id,
-    '$GENDER',
-    '$PREF',
-    '$BIO',
-    '$LOCATION',
-    48.8566 + (RANDOM() - 0.5) * 0.1,
-    2.3522 + (RANDOM() - 0.5) * 0.1
-FROM new_user;
-EOF
 
-done
+if [ -z "$SQL_COMMANDS" ]; then
+  echo "[!] Failed to fetch random user data."
+  exit 1
+fi
 
-# Tags users
-echo "[*] Assigning tags..."
-$PSQL <<EOF
-INSERT INTO user_tags (user_id, tag_id)
-SELECT u.id, t.id
-FROM users u
-JOIN tags t ON RANDOM() < 0.2
-ON CONFLICT DO NOTHING;
-EOF
+echo "[*] Inserting users and profiles in batch..."
 
-# Likes
-echo "[*] Generating likes..."
-$PSQL <<EOF
-INSERT INTO likes (liker_id, liked_id)
-SELECT u1.id, u2.id
-FROM users u1
-JOIN users u2 ON u1.id <> u2.id
-WHERE RANDOM() < 0.2
-ON CONFLICT DO NOTHING;
-EOF
-
-# Messages
-echo "[*] Generating messages..."
-$PSQL <<EOF
-INSERT INTO messages (sender_id, receiver_id, content)
-SELECT l1.liker_id, l1.liked_id, 'Hello there!'
-FROM likes l1
-JOIN likes l2
-ON l1.liker_id = l2.liked_id
-AND l1.liked_id = l2.liker_id;
-EOF
+echo "$SQL_COMMANDS" | $PSQL
 
 echo "[*] Creating special user bob..."
 
@@ -128,7 +147,13 @@ WITH new_user AS (
         TRUE,
         42
     )
+    ON CONFLICT (email) DO NOTHING
     RETURNING id
+),
+user_id AS (
+    SELECT id FROM new_user
+    UNION ALL
+    SELECT id FROM users WHERE email = 'b@b.b'
 )
 INSERT INTO profiles (
     user_id,
@@ -147,7 +172,15 @@ SELECT
     'Paris',
     48.8566,
     2.3522
-FROM new_user;
+FROM user_id
+ON CONFLICT (user_id) DO UPDATE SET
+    gender = EXCLUDED.gender,
+    sexual_preference = EXCLUDED.sexual_preference,
+    biography = EXCLUDED.biography,
+    location = EXCLUDED.location,
+    latitude = EXCLUDED.latitude,
+    longitude = EXCLUDED.longitude,
+    updated_at = NOW();
 EOF
 
 echo "[✔] Seeding complete."
