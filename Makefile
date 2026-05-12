@@ -9,6 +9,8 @@ $(DATA):
 
 up: $(DATA)
 	podman-compose up -d
+	python3 -m venv venv
+	source venv/bin/activate && pip install -r requirements.txt
 
 down:
 	podman-compose down
@@ -17,13 +19,14 @@ reset:
 	podman-compose down -v
 	podman unshare rm -rf data/postgres
 	rm -rf data
+	rm -rf venv
 
 seed:
 	export $(grep -v '^#' .env | xargs)
-	./seed.sh
+	source venv/bin/activate && python3 seed.py
 
 re: reset up
-	sleep 2
+	sleep 4
 	make -sC . seed
 
 $(BUN):

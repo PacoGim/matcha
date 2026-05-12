@@ -20,6 +20,7 @@ CREATE TABLE users (
     last_name TEXT NOT NULL,
     is_verified BOOLEAN DEFAULT FALSE,
     fame_rating INTEGER DEFAULT 0,
+    birthdate DATE NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );

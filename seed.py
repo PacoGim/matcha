@@ -121,6 +121,7 @@ def generate_users():
                 "$2b$10$S/TOfkABQGcCr.tf3PsBSO9/gVWh6VPT5KV3iCabLrWXRQkxbdBu2",
             "first_name": item["name"]["first"].strip(),
             "last_name": item["name"]["last"].strip(),
+            "birthdate": "1990-01-01",
             "gender": gender,
             "sexual_preference": random.choice(
                 ["male", "female", "both"]
@@ -150,6 +151,7 @@ def insert_users(conn, users):
                     password_hash,
                     first_name,
                     last_name,
+                    birthdate,
                     is_verified,
                     fame_rating
                 )
@@ -159,6 +161,7 @@ def insert_users(conn, users):
                     %(password_hash)s,
                     %(first_name)s,
                     %(last_name)s,
+                    %(birthdate)s,
                     TRUE,
                     %(fame_rating)s
                 )
@@ -240,6 +243,7 @@ def create_bob(conn):
             "$2b$10$S/TOfkABQGcCr.tf3PsBSO9/gVWh6VPT5KV3iCabLrWXRQkxbdBu2",
         "first_name": "Bob",
         "last_name": "Doe",
+        "birthdate": "1990-06-01",
         "gender": "male",
         "sexual_preference": "female",
         "biography":
@@ -346,7 +350,7 @@ def generate_messages(conn):
 
             JOIN likes l2
                 ON l1.liker_id = l2.liked_id
-               AND l1.liked_id = l2.liker_id;
+                AND l1.liked_id = l2.liker_id;
             """
         )
 
