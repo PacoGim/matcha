@@ -9,7 +9,7 @@ interface User {
 interface AuthContextType {
     user: User | null;
     login: (user: User) => void;
-    logout: () => void;
+    logout: (message?: string) => void;
     isAuthenticated: boolean;
     isInitializing: boolean;
 }
@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(userData);
     };
 
-    const logout = () => {
+    const logout = (message: string = "") => {
         setUser(null);
         window.location.assign("/")
     };

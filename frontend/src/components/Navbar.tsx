@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import { useAuth } from '../contexts/AuthContext';
 import Navitem from './Navitem';
+import handleLogout from '../functions/handleLogout.fn';
 
 function Navbar() {
     const navigate = useNavigate();
@@ -34,20 +35,6 @@ function Navbar() {
         }
     ]
 
-    const handleLogout = async () => {
-        try {
-            const endpoint_logout = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/logout`
-            await fetch(endpoint_logout, {
-                method: 'POST',
-                credentials: 'include',
-            });
-        } catch (error) {
-            console.error('Logout error:', error);
-        } finally {
-            logout();
-        }
-    };
-
     return (
         <nav className="navbar">
             <div className="navbar-container">
@@ -67,7 +54,7 @@ function Navbar() {
                                         </span>
                                     </li>
                                     <li className="navbar-item">
-                                        <button onClick={handleLogout} className="navbar-logout">
+                                        <button onClick={() => handleLogout(logout)} className="navbar-logout">
                                             Logout
                                         </button>
                                     </li>

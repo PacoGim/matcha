@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Register.css';
 import Navbar from '../../components/Navbar';
 import { validateUsername, getValidationRulesDescription } from '../../validators/usernameValidator';
 import { validateName, getValidationRulesDescription as getNameValidationRulesDescription } from '../../validators/nameValidator';
 import { validatePassword, getValidationRulesDescription as getPasswordValidationRulesDescription } from '../../validators/passwordValidator';
 import { validateBirthdate, getValidationRulesDescription as getBirthValidationRulesDescription } from '../../validators/birthdateValidator';
+import { useAuth } from '../../contexts/AuthContext';
+import handleLogout from '../../functions/handleLogout.fn';
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -19,6 +21,15 @@ export default function Register() {
     const [error, setError] = useState('');
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
     const [loading, setLoading] = useState(false);
+    const { isAuthenticated, logout } = useAuth();
+
+    useEffect(() => {
+        if (isAuthenticated === true) {
+            handleLogout(logout)
+        }
+    }, [isAuthenticated]);
+
+    if (isAuthenticated === true) return null;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -68,6 +79,12 @@ export default function Register() {
         const passwordError = validatePassword(formData.password);
         if (passwordError) {
             newErrors['password'] = passwordError.message;
+        }
+
+        // Client-side validation for password
+        const birthdateError = validateBirthdate(formData.birthdate);
+        if (birthdateError) {
+            newErrors['password'] = birthdateError.message;
         }
 
         // If there are validation errors, show them all and stop
