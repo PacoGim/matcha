@@ -9,3 +9,4 @@ frontend/build
 backend/ssl/
 !backend/ssl/cert.cnf
 pnpm*.yaml
+backend/images
