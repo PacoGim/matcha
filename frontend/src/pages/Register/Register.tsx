@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
-import './Register.css';
-import Navbar from '../../components/Navbar';
-import { validateUsername, getValidationRulesDescription } from '../../validators/usernameValidator';
-import { validateName, getValidationRulesDescription as getNameValidationRulesDescription } from '../../validators/nameValidator';
-import { validatePassword, getValidationRulesDescription as getPasswordValidationRulesDescription } from '../../validators/passwordValidator';
-import { validateBirthdate, getValidationRulesDescription as getBirthValidationRulesDescription } from '../../validators/birthdateValidator';
-import { useAuth } from '../../contexts/AuthContext';
-import handleLogout from '../../functions/handleLogout.fn';
+import { useEffect, useState } from 'react'
+import './Register.css'
+import Navbar from '../../components/Navbar'
+import { validateUsername, getValidationRulesDescription } from '../../validators/usernameValidator'
+import { validateName, getValidationRulesDescription as getNameValidationRulesDescription } from '../../validators/nameValidator'
+import { validatePassword, getValidationRulesDescription as getPasswordValidationRulesDescription } from '../../validators/passwordValidator'
+import { validateBirthdate, getValidationRulesDescription as getBirthValidationRulesDescription } from '../../validators/birthdateValidator'
+import { useAuth } from '../../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -16,82 +16,83 @@ export default function Register() {
         first_name: '',
         last_name: '',
         birthdate: ''
-    });
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
-    const [loading, setLoading] = useState(false);
-    const { isAuthenticated, logout } = useAuth();
+    })
+    const [message, setMessage] = useState('')
+    const [error, setError] = useState('')
+    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
+    const [loading, setLoading] = useState(false)
+    const { isAuthenticated } = useAuth()
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (isAuthenticated === true) {
-            handleLogout(logout)
+            navigate('/')
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated])
 
-    if (isAuthenticated === true) return null;
+    if (isAuthenticated === true) return null
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
+        const { name, value } = e.target
         setFormData(prev => ({
             ...prev,
             [name]: value
-        }));
+        }))
 
         // Clear field error when user starts typing
         if (fieldErrors[name]) {
             setFieldErrors(prev => ({
                 ...prev,
                 [name]: ''
-            }));
+            }))
         }
-    };
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setError('');
-        setMessage('');
-        setFieldErrors({});
-        setLoading(true);
+        e.preventDefault()
+        setError('')
+        setMessage('')
+        setFieldErrors({})
+        setLoading(true)
 
         // Accumulate all errors
-        const newErrors: { [key: string]: string } = {};
+        const newErrors: { [key: string]: string } = {}
 
         // Client-side validation for username
-        const usernameError = validateUsername(formData.username);
+        const usernameError = validateUsername(formData.username)
         if (usernameError) {
-            newErrors['username'] = usernameError.message;
+            newErrors['username'] = usernameError.message
         }
 
         // Client-side validation for first_name
-        const firstNameError = validateName(formData.first_name, 'first_name');
+        const firstNameError = validateName(formData.first_name, 'first_name')
         if (firstNameError) {
-            newErrors['first_name'] = firstNameError.message;
+            newErrors['first_name'] = firstNameError.message
         }
 
         // Client-side validation for last_name
-        const lastNameError = validateName(formData.last_name, 'last_name');
+        const lastNameError = validateName(formData.last_name, 'last_name')
         if (lastNameError) {
-            newErrors['last_name'] = lastNameError.message;
+            newErrors['last_name'] = lastNameError.message
         }
 
         // Client-side validation for password
-        const passwordError = validatePassword(formData.password);
+        const passwordError = validatePassword(formData.password)
         if (passwordError) {
-            newErrors['password'] = passwordError.message;
+            newErrors['password'] = passwordError.message
         }
 
         // Client-side validation for password
-        const birthdateError = validateBirthdate(formData.birthdate);
+        const birthdateError = validateBirthdate(formData.birthdate)
         if (birthdateError) {
-            newErrors['password'] = birthdateError.message;
+            newErrors['password'] = birthdateError.message
         }
 
         // If there are validation errors, show them all and stop
         if (Object.keys(newErrors).length > 0) {
-            setFieldErrors(newErrors);
-            setLoading(false);
-            return;
+            setFieldErrors(newErrors)
+            setLoading(false)
+            return
         }
 
         try {
@@ -102,21 +103,21 @@ export default function Register() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(formData),
-            });
+            })
 
-            const data = await response.json();
+            const data = await response.json()
 
             if (!response.ok) {
                 // Handle field-specific errors from backend
                 if (data.errors) {
-                    setFieldErrors(data.errors);
+                    setFieldErrors(data.errors)
                 } else {
-                    setError(data.error || 'Registration failed');
+                    setError(data.error || 'Registration failed')
                 }
-                return;
+                return
             }
 
-            setMessage('Registration successful! Check your email to verify your account.');
+            setMessage('Registration successful! Check your email to verify your account.')
             setFormData({
                 email: '',
                 username: '',
@@ -124,13 +125,13 @@ export default function Register() {
                 first_name: '',
                 last_name: '',
                 birthdate: ''
-            });
+            })
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred');
+            setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
 
     return (
         <>
@@ -230,5 +231,5 @@ export default function Register() {
                 </div>
             </div>
         </>
-    );
+    )
 }

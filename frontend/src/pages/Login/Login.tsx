@@ -1,33 +1,41 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Login.css';
-import Navbar from '../../components/Navbar';
-import { useAuth } from '../../contexts/AuthContext';
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import './Login.css'
+import Navbar from '../../components/Navbar'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function Login() {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
-    });
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { login } = useAuth();
+    })
+    const [message, setMessage] = useState('')
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
+    const navigate = useNavigate()
+    const { login, isAuthenticated } = useAuth()
+
+    useEffect(() => {
+        if (isAuthenticated === true) {
+            navigate('/')
+        }
+    }, [isAuthenticated])
+
+    if (isAuthenticated === true) return null
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
+        const { name, value } = e.target
         setFormData(prev => ({
             ...prev,
             [name]: value
-        }));
-    };
+        }))
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setError('');
-        setMessage('');
-        setLoading(true);
+        e.preventDefault()
+        setError('')
+        setMessage('')
+        setLoading(true)
 
         try {
 
@@ -39,33 +47,33 @@ export default function Login() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(formData),
-            });
+            })
 
-            const data = await response.json();
+            const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Login failed');
+                throw new Error(data.error || 'Login failed')
             }
 
             // Store authenticated user in context; JWT is kept in an HttpOnly cookie
-            login(data.user);
+            login(data.user)
 
-            setMessage('Login successful! Welcome back.');
+            setMessage('Login successful! Welcome back.')
             setTimeout(() => {
                 if (localStorage.getItem('firstLogin')) {
-                    localStorage.removeItem('firstLogin');
-                    navigate('/profile');
+                    localStorage.removeItem('firstLogin')
+                    navigate('/profile')
                 } else {
-                    navigate('/');
+                    navigate('/')
                 }
-            }, 1000);
+            }, 1000)
 
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred');
+            setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
 
     const handleForgotPassword = async () => {
         const response = await fetch(`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/forgot-password`, {
@@ -74,18 +82,18 @@ export default function Login() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email: formData.email }),
-        });
+        })
 
-        const data = await response.json();
-        console.log("Forgot password response:", data);
+        const data = await response.json()
+        console.log("Forgot password response:", data)
         if (!response.ok) {
-            setError(data.error || 'Failed to send reset link');
+            setError(data.error || 'Failed to send reset link')
         } else {
-            setMessage('If an account with that email exists, a reset link has been sent.');
+            setMessage('If an account with that email exists, a reset link has been sent.')
             setFormData(prev => ({
                 ...prev,
                 email: ''
-            }));
+            }))
         }
 
     }
@@ -136,5 +144,5 @@ export default function Login() {
                 </div>
             </div>
         </>
-    );
+    )
 }
