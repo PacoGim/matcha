@@ -45,7 +45,6 @@ function Navbar() {
             console.error('Logout error:', error);
         } finally {
             logout();
-            navigate('/');
         }
     };
 
