@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './CheckEmail.css';
 import Navbar from '../../components/Navbar';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function CheckEmail() {
     const [message, setMessage] = useState('Verifying your email...');
@@ -9,6 +10,7 @@ export default function CheckEmail() {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const { logout } = useAuth()
 
     useEffect(() => {
         const verifyToken = async () => {
@@ -30,10 +32,9 @@ export default function CheckEmail() {
                     body: JSON.stringify({ token }),
                 });
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Token verification failed');
+                // const data = await response.json();
+                if (response.ok === false) {
+                    return logout("Token verification failed");
                 }
 
                 setMessage('Email verified successfully! Redirecting to login...');
@@ -58,7 +59,7 @@ export default function CheckEmail() {
             <div className="check-email-container">
                 <h1>Email Verification</h1>
                 {loading && <div className="loading-spinner"></div>}
-                {message && !error && <div className="success-message">{message}</div>}
+                {message && !error && <div className="info-message">{message}</div>}
                 {error && <div className="error-message">{error}</div>}
                 {!loading && error && (
                     <button onClick={() => navigate('/register')} className="retry-button">

@@ -21,7 +21,7 @@ export async function fetchSuggestedProfiles(
             },
         });
         
-        if (!response.ok) {
+        if (!response.ok) {            
             throw new Error(`Failed to fetch profiles: ${response.status}`)
         }
         

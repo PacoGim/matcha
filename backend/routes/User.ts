@@ -126,7 +126,6 @@ userRoute.post("/user/register", async (req, res) => {
             validationErrors[birthdateError.field] = birthdateError.message
         }
 
-
         if (Object.keys(validationErrors).length > 0) {
             return res.status(400).json({ errors: validationErrors })
         }

@@ -1,52 +1,54 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Profile.css';
-import Navbar from '../../components/Navbar';
-import LocationPicker from '../../components/LocationPicker';
-import { useAuth } from '../../contexts/AuthContext';
-import { validateName } from '../../validators/nameValidator';
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import './Profile.css'
+import Navbar from '../../components/Navbar'
+import LocationPicker from '../../components/LocationPicker'
+import { useAuth } from '../../contexts/AuthContext'
+import { validateName } from '../../validators/nameValidator'
 
 interface User {
-    email: string;
-    username: string;
-    first_name: string;
-    last_name: string;
-    age: number;
-    is_verified: boolean;
-    fame_rating: number;
-    created_at: string;
-    updated_at: string;
+    email: string
+    username: string
+    first_name: string
+    last_name: string
+    age: number
+    is_verified: boolean
+    fame_rating: number
+    created_at: string
+    updated_at: string
 }
 
 interface Profile {
-    gender: string;
-    sexual_preference: string;
-    biography: string;
-    location: string;
-    latitude: number;
-    longitude: number;
-    allow_gps: boolean;
+    gender: string
+    sexual_preference: string
+    biography: string
+    location: string
+    latitude: number
+    longitude: number
+    allow_gps: boolean
 }
 
 interface ProfileResponse {
-    user: User;
-    profile: Profile;
+    user: User
+    error: string
+    profile: Profile
 }
 
 interface FieldErrors {
-    [key: string]: string;
+    [key: string]: string
 }
 
 export default function ProfilePage() {
-    const [user, setUser] = useState<User | null>(null);
-    const [profile, setProfile] = useState<Profile | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
-    const [isEditing, setIsEditing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'prompt' | null>(null);
-    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+    const [user, setUser] = useState<User | null>(null)
+    const [profile, setProfile] = useState<Profile | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState('')
+    const [successMessage, setSuccessMessage] = useState('')
+    const [isEditing, setIsEditing] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
+    const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'prompt' | null>(null)
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+    const { logout } = useAuth()
 
     const [formData, setFormData] = useState({
         email: '',
@@ -59,16 +61,16 @@ export default function ProfilePage() {
         latitude: 0,
         longitude: 0,
         allow_gps: false,
-    });
+    })
 
-    const { isInitializing } = useAuth();
-    const geocodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const navigate = useNavigate();
+    const { isInitializing } = useAuth()
+    const geocodeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const navigate = useNavigate()
 
     useEffect(() => {
         const fetchProfile = async () => {
             if (isInitializing) {
-                return;
+                return
             }
 
             try {
@@ -79,16 +81,20 @@ export default function ProfilePage() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                });
+                })
 
-                const data: ProfileResponse = await response.json();
+                const data: ProfileResponse = await response.json()
 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch profile');
+                    console.log(response.status)
+                    console.log('Profile data: ', data.error)
+
+                    logout()
+                    throw new Error('Failed to fetch profile')
                 }
-                console.log('Profile data: ', JSON.stringify(data));
-                setUser(data.user);
-                setProfile(data.profile);
+                console.log('Profile data: ', JSON.stringify(data))
+                setUser(data.user)
+                setProfile(data.profile)
                 setFormData({
                     email: data.user.email,
                     first_name: data.user.first_name,
@@ -100,26 +106,26 @@ export default function ProfilePage() {
                     latitude: data.profile.latitude,
                     longitude: data.profile.longitude,
                     allow_gps: data.profile.allow_gps,
-                });
+                })
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'An error occurred');
+                setError(err instanceof Error ? err.message : 'An error occurred')
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
-        };
+        }
 
-        fetchProfile();
-    }, [isInitializing]);
+        fetchProfile()
+    }, [isInitializing])
 
     // Reverse geocoding with debounce when coordinates change
     useEffect(() => {
         if (formData.latitude === 0 && formData.longitude === 0) {
-            return; // Skip if coordinates are not set
+            return // Skip if coordinates are not set
         }
 
         // Clear previous timeout
         if (geocodeTimeoutRef.current) {
-            clearTimeout(geocodeTimeoutRef.current);
+            clearTimeout(geocodeTimeoutRef.current)
         }
 
         // Set new timeout with 1 second debounce
@@ -127,100 +133,100 @@ export default function ProfilePage() {
             try {
                 const response = await fetch(
                     `https://nominatim.openstreetmap.org/reverse?format=json&lat=${formData.latitude}&lon=${formData.longitude}`
-                );
-                const data = await response.json();
+                )
+                const data = await response.json()
                 if (data.display_name) {
                     setFormData(prev => ({
                         ...prev,
                         location: data.display_name,
-                    }));
+                    }))
                 }
             } catch (err) {
-                console.warn('Could not fetch location details:', err);
+                console.warn('Could not fetch location details:', err)
             }
-        }, 1000); // 1 second debounce
+        }, 1000) // 1 second debounce
 
         return () => {
             if (geocodeTimeoutRef.current) {
-                clearTimeout(geocodeTimeoutRef.current);
+                clearTimeout(geocodeTimeoutRef.current)
             }
-        };
-    }, [formData.latitude, formData.longitude]);
+        }
+    }, [formData.latitude, formData.longitude])
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const target = e.target;
-        const { name } = target;
-        const checked = target instanceof HTMLInputElement ? target.checked : false;
-        const type = target instanceof HTMLInputElement ? target.type : '';
+        const target = e.target
+        const { name } = target
+        const checked = target instanceof HTMLInputElement ? target.checked : false
+        const type = target instanceof HTMLInputElement ? target.type : ''
         const value = target instanceof HTMLInputElement
             ? type === 'number'
                 ? Number.isFinite(target.valueAsNumber)
                     ? target.valueAsNumber
                     : 0
                 : target.value
-            : target.value;
+            : target.value
 
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
-        }));
+        }))
 
         if (fieldErrors[name]) {
             setFieldErrors(prev => ({
                 ...prev,
                 [name]: ''
-            }));
+            }))
         }
-    };
+    }
 
-    const getFieldError = (field: string) => fieldErrors[field] || '';
+    const getFieldError = (field: string) => fieldErrors[field] || ''
 
-    const inputClass = (field: string) => `form-input${fieldErrors[field] ? ' error' : ''}`;
+    const inputClass = (field: string) => `form-input${fieldErrors[field] ? ' error' : ''}`
 
     const handleSave = async () => {
-        setIsSaving(true);
-        setError('');
-        setSuccessMessage('');
-        setFieldErrors({});
+        setIsSaving(true)
+        setError('')
+        setSuccessMessage('')
+        setFieldErrors({})
 
-        const newErrors: FieldErrors = {};
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const newErrors: FieldErrors = {}
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
         if (!formData.email || !emailRegex.test(formData.email)) {
-            newErrors.email = 'Please enter a valid email address';
+            newErrors.email = 'Please enter a valid email address'
         }
 
-        const firstNameError = validateName(formData.first_name, 'first_name');
+        const firstNameError = validateName(formData.first_name, 'first_name')
         if (firstNameError) {
-            newErrors[firstNameError.field] = firstNameError.message;
+            newErrors[firstNameError.field] = firstNameError.message
         }
 
-        const lastNameError = validateName(formData.last_name, 'last_name');
+        const lastNameError = validateName(formData.last_name, 'last_name')
         if (lastNameError) {
-            newErrors[lastNameError.field] = lastNameError.message;
+            newErrors[lastNameError.field] = lastNameError.message
         }
 
         if (formData.gender && !['male', 'female', 'other'].includes(formData.gender)) {
-            newErrors.gender = 'Invalid gender value';
+            newErrors.gender = 'Invalid gender value'
         }
 
         if (formData.sexual_preference && !['male', 'female', 'both'].includes(formData.sexual_preference)) {
-            newErrors.sexual_preference = 'Invalid sexual preference value';
+            newErrors.sexual_preference = 'Invalid sexual preference value'
         }
 
         if (formData.biography && formData.biography.length > 100) {
-            newErrors.biography = 'Biography cannot exceed 100 characters';
+            newErrors.biography = 'Biography cannot exceed 100 characters'
         }
 
         if (Object.keys(newErrors).length > 0) {
-            setFieldErrors(newErrors);
-            setError('Please fix validation errors.');
-            setIsSaving(false);
-            return;
+            setFieldErrors(newErrors)
+            setError('Please fix validation errors.')
+            setIsSaving(false)
+            return
         }
 
         try {
-            const endpoint_profile = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/profile`;
+            const endpoint_profile = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/profile`
             const response = await fetch(endpoint_profile, {
                 method: 'PUT',
                 credentials: 'include',
@@ -243,39 +249,39 @@ export default function ProfilePage() {
                         allow_gps: formData.allow_gps,
                     }
                 }),
-            });
+            })
 
-            const data = await response.json();
+            const data = await response.json()
 
             if (!response.ok) {
                 if (data && Array.isArray(data.errors)) {
                     const errors = data.errors.reduce((acc: FieldErrors, err: any) => {
                         if (err && err.field && err.error) {
-                            acc[err.field] = err.error;
+                            acc[err.field] = err.error
                         }
-                        return acc;
-                    }, {});
+                        return acc
+                    }, {})
 
-                    setFieldErrors(errors);
-                    setError(data.message || data.errors[0]?.error || 'Please fix validation errors.');
-                    return;
+                    setFieldErrors(errors)
+                    setError(data.message || data.errors[0]?.error || 'Please fix validation errors.')
+                    return
                 }
 
-                throw new Error(data.error || 'Failed to update profile');
+                throw new Error(data.error || 'Failed to update profile')
             }
 
-            const result: ProfileResponse = data;
-            setUser(result.user);
-            setProfile(result.profile);
-            setIsEditing(false);
-            setSuccessMessage('Profile updated successfully!');
-            setTimeout(() => setSuccessMessage(''), 3000);
+            const result: ProfileResponse = data
+            setUser(result.user)
+            setProfile(result.profile)
+            setIsEditing(false)
+            setSuccessMessage('Profile updated successfully!')
+            setTimeout(() => setSuccessMessage(''), 3000)
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred');
+            setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
-            setIsSaving(false);
+            setIsSaving(false)
         }
-    };
+    }
 
     const handleCancel = () => {
         if (user && profile) {
@@ -290,87 +296,87 @@ export default function ProfilePage() {
                 latitude: profile.latitude,
                 longitude: profile.longitude,
                 allow_gps: profile.allow_gps,
-            });
+            })
         }
-        setFieldErrors({});
-        setError('');
-        setIsEditing(false);
-    };
+        setFieldErrors({})
+        setError('')
+        setIsEditing(false)
+    }
 
     const requestLocationPermission = async () => {
         if (!navigator.geolocation) {
-            setError('Geolocation is not supported by this browser.');
-            return;
+            setError('Geolocation is not supported by this browser.')
+            return
         }
 
         try {
-            const permission = await navigator.permissions.query({ name: 'geolocation' });
-            setLocationPermission(permission.state);
+            const permission = await navigator.permissions.query({ name: 'geolocation' })
+            setLocationPermission(permission.state)
 
             if (permission.state === 'granted') {
-                getCurrentLocation();
+                getCurrentLocation()
             } else if (permission.state === 'prompt') {
                 // Will ask for permission when getCurrentLocation is called
-                getCurrentLocation();
+                getCurrentLocation()
             } else {
-                setError('Location permission denied. Please enable location services in your browser settings.');
+                setError('Location permission denied. Please enable location services in your browser settings.')
             }
         } catch (err) {
             // Fallback for browsers that don't support permissions API
-            getCurrentLocation();
+            getCurrentLocation()
         }
-    };
+    }
 
     const getCurrentLocation = () => {
         if (!navigator.geolocation) {
-            setError('Geolocation is not supported by this browser.');
-            return;
+            setError('Geolocation is not supported by this browser.')
+            return
         }
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const { latitude, longitude } = position.coords;
+                const { latitude, longitude } = position.coords
                 setFormData(prev => ({
                     ...prev,
                     latitude,
                     longitude,
                     allow_gps: true,
-                }));
-                setLocationPermission('granted');
-                setError('');
+                }))
+                setLocationPermission('granted')
+                setError('')
                 // Reverse geocoding is now handled by useEffect watching latitude/longitude
             },
             (err) => {
-                let errorMessage = 'Unable to retrieve your location.';
+                let errorMessage = 'Unable to retrieve your location.'
                 switch (err.code) {
                     case err.PERMISSION_DENIED:
-                        errorMessage = 'Location access denied by user.';
-                        setLocationPermission('denied');
-                        break;
+                        errorMessage = 'Location access denied by user.'
+                        setLocationPermission('denied')
+                        break
                     case err.POSITION_UNAVAILABLE:
-                        errorMessage = 'Location information is unavailable.';
-                        break;
+                        errorMessage = 'Location information is unavailable.'
+                        break
                     case err.TIMEOUT:
-                        errorMessage = 'Location request timed out.';
-                        break;
+                        errorMessage = 'Location request timed out.'
+                        break
                 }
-                setError(errorMessage);
+                setError(errorMessage)
             },
             {
                 enableHighAccuracy: true,
                 timeout: 10000,
                 maximumAge: 300000, // 5 minutes
             }
-        );
-    };
+        )
+    }
 
     const handleLocationChange = (lat: number, lng: number) => {
         setFormData(prev => ({
             ...prev,
             latitude: lat,
             longitude: lng,
-        }));
-    };
+        }))
+    }
 
     if (loading) {
         return (
@@ -381,7 +387,7 @@ export default function ProfilePage() {
                     <p>Loading profile...</p>
                 </div>
             </div>
-        );
+        )
     }
 
     return (
@@ -469,9 +475,9 @@ export default function ProfilePage() {
                                     <button
                                         className="btn btn-primary"
                                         onClick={() => {
-                                            setFieldErrors({});
-                                            setError('');
-                                            setIsEditing(true);
+                                            setFieldErrors({})
+                                            setError('')
+                                            setIsEditing(true)
                                         }}
                                     >
                                         Edit Profile
@@ -679,5 +685,5 @@ export default function ProfilePage() {
                 )}
             </div>
         </div>
-    );
+    )
 }
