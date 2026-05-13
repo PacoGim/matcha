@@ -1,18 +1,22 @@
 
-import { Link, useNavigate } from 'react-router-dom';
-import './Navbar.css';
-import { useAuth } from '../contexts/AuthContext';
-import Navitem from './Navitem';
-import handleLogout from '../functions/handleLogout.fn';
+import { Link, useNavigate } from 'react-router-dom'
+import './Navbar.css'
+import { useAuth } from '../contexts/AuthContext'
+import Navitem from './Navitem'
+import handleLogout from '../functions/handleLogout.fn'
 
 function Navbar() {
-    const navigate = useNavigate();
-    const { user, isAuthenticated, logout } = useAuth();
+    const navigate = useNavigate()
+    const { user, isAuthenticated, logout } = useAuth()
 
     const privatePaths = [
         {
             to: '/search',
             name: 'Search'
+        },
+        {
+            to: '/profile',
+            name: 'Profile'
         }
     ]
 
@@ -70,7 +74,7 @@ function Navbar() {
                 </ul>
             </div>
         </nav>
-    );
+    )
 }
 
 export default Navbar;
