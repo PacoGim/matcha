@@ -96,55 +96,38 @@ userRoute.post("/user/check-email-token", async (req, res) => {
 userRoute.post("/user/register", async (req, res) => {
     try {
         const { email, username, password, first_name, last_name, birthdate } = req.body
-
-        const validationErrors: { field: string; error: string }[] = []
+        const validationErrors: { [key: string]: string } = {};
         // Validate username
         const usernameError = validateUsername(username)
         if (usernameError) {
-            validationErrors.push({
-                error: usernameError.message,
-                field: usernameError.field
-            })
+            validationErrors[usernameError.field] = usernameError.message
         }
 
         // Validate first_name
         const firstNameError = validateName(first_name, 'first_name')
         if (firstNameError) {
-            validationErrors.push({
-                error: firstNameError.message,
-                field: firstNameError.field
-            })
+            validationErrors[firstNameError.field] = firstNameError.message
         }
 
         // Validate last_name
         const lastNameError = validateName(last_name, 'last_name')
         if (lastNameError) {
-            validationErrors.push({
-                error: lastNameError.message,
-                field: lastNameError.field
-            })
+            validationErrors[lastNameError.field] = lastNameError.message
         }
 
         // Validate password
         const passwordError = validatePassword(password)
         if (passwordError) {
-            validationErrors.push({
-                error: passwordError.message,
-                field: passwordError.field
-            })
+            validationErrors[passwordError.field] = passwordError.message
         }
 
         const birthdateError = validateBirthdate(birthdate)
-        {
-            if (birthdateError) {
-                validationErrors.push({
-                    error: birthdateError.message,
-                    field: birthdateError.field
-                })
-            }
+        if (birthdateError) {
+            validationErrors[birthdateError.field] = birthdateError.message
         }
 
-        if (validationErrors.length > 0) {
+
+        if (Object.keys(validationErrors).length > 0) {
             return res.status(400).json({ errors: validationErrors })
         }
 
@@ -822,9 +805,9 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
                         values.push(profileUpdates.allow_gps)
                     }
                     const nextLatitude =
-                    profileUpdates.latitude !== undefined
-                        ? profileUpdates.latitude
-                        : null
+                        profileUpdates.latitude !== undefined
+                            ? profileUpdates.latitude
+                            : null
 
                     const nextLongitude =
                         profileUpdates.longitude !== undefined

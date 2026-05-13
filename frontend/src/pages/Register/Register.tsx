@@ -91,8 +91,8 @@ export default function Register() {
 
             if (!response.ok) {
                 // Handle field-specific errors from backend
-                if (data.field) {
-                    setFieldErrors({ [data.field]: data.error });
+                if (data.errors) {
+                    setFieldErrors(data.errors);
                 } else {
                     setError(data.error || 'Registration failed');
                 }
