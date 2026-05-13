@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import './Search.css';
+import { useState } from 'react';
 import Navbar from '../../components/Navbar';
+import './Search.css';
 import SearchFilters, { SearchFiltersState } from '../../components/SearchFilters';
 import SearchResults from '../../components/SearchResults';
 import { fetchNearbyUsers } from '../../services/userService';
