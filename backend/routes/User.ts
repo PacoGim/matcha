@@ -96,7 +96,7 @@ userRoute.post("/user/check-email-token", async (req, res) => {
 userRoute.post("/user/register", async (req, res) => {
     try {
         const { email, username, password, first_name, last_name, birthdate } = req.body
-        const validationErrors: { [key: string]: string } = {};
+        const validationErrors: { [key: string]: string } = {}
         // Validate username
         const usernameError = validateUsername(username)
         if (usernameError) {
@@ -189,19 +189,19 @@ userRoute.post("/user/login", async (req, res) => {
         const result = await db.getPool().query("SELECT id, email, username, password_hash, is_verified FROM users WHERE email=$1;", [email])
 
         if (!result.rows.length) {
-            return unauthorized(res, "Invalid credentials")
+            return unauthorized(res, `Invalid credentials for: email: ${email}`)
         }
 
         const user = result.rows[0]
 
         if (!user.is_verified) {
-            return unauthorized(res, "Please verify your email before logging in")
+            return unauthorized(res, `Please verify your email before logging in for: email: ${email}`)
         }
 
         const isMatch = await compare(password, user.password_hash)
 
         if (!isMatch) {
-            return unauthorized(res, "Invalid credentials")
+            return unauthorized(res, `Invalid credentials for: email: ${email}`)
         }
 
         // Generate JWT token
@@ -376,7 +376,7 @@ userRoute.get(
     authenticateToken,
     async (req: AuthRequest, res) => {
         try {
-            const userId = req.user?.id;
+            const userId = req.user?.id
 
             if (!userId) {
                 return unauthorized(res, "Unauthorized")
@@ -399,66 +399,66 @@ userRoute.get(
                 WHERE u.id = $1
                 `,
                 [userId]
-            );
+            )
 
             if (!currentResult.rows.length) {
                 return res.status(404).json({
                     error: "User not found",
-                });
+                })
             }
 
-            const current = currentResult.rows[0];
+            const current = currentResult.rows[0]
 
             if (!current.allow_gps || !current.coordinates) {
                 return res.status(400).json({
                     error:
                         "Current user location is required and GPS must be allowed",
-                });
+                })
             }
 
             // Parse query parameters with defaults
-            const maxDistanceKm = Number(req.query.max_distance) || 50;
-            const minAge = Number(req.query.min_age) || 18;
-            const maxAge = Number(req.query.max_age) || 99;
-            const minFame = Number(req.query.min_fame) || 0;
-            const sortBy = (req.query.sort_by as string) || "distance"; // distance, fame, age
-            const interests = req.query.interests ? (req.query.interests as string).split(",") : [];
+            const maxDistanceKm = Number(req.query.max_distance) || 50
+            const minAge = Number(req.query.min_age) || 18
+            const maxAge = Number(req.query.max_age) || 99
+            const minFame = Number(req.query.min_fame) || 0
+            const sortBy = (req.query.sort_by as string) || "distance" // distance, fame, age
+            const interests = req.query.interests ? (req.query.interests as string).split(",") : []
 
-            const maxDistanceMeters = maxDistanceKm * 1000;
+            const maxDistanceMeters = maxDistanceKm * 1000
 
-            const currentGender = current.gender ?? null;
-            const currentPreference = current.sexual_preference ?? "both";
+            const currentGender = current.gender ?? null
+            const currentPreference = current.sexual_preference ?? "both"
 
             // Build age filter
             const ageFilterCondition = `
                 AND DATE_PART('year', AGE(u.birthdate)) >= $6
                 AND DATE_PART('year', AGE(u.birthdate)) <= $7
-            `;
+            `
 
             // Build fame filter
             const fameFilterCondition = `
                 AND u.fame_rating >= $8
-            `;
+            `
 
             // Build interests filter
-            let interestsJoin = "";
-            let interestsCondition = "";
+            let interestsJoin = ""
+            let interestsCondition = ""
             if (interests.length > 0) {
                 interestsJoin = `
                     LEFT JOIN user_tags ut ON u.id = ut.user_id
                     LEFT JOIN tags t ON ut.tag_id = t.id
-                `;
+                `
                 interestsCondition = `
                     AND t.name IN (${interests.map((_, i) => `$${9 + i}`).join(",")})
-                `;
+                `
             }
 
             // Build order by clause
-            let orderByClause = "distance_km ASC";
+            let orderByClause = "distance_km ASC"
             if (sortBy === "fame") {
-                orderByClause = "u.fame_rating DESC";
+                orderByClause = "u.fame_rating DESC"
             } else if (sortBy === "age") {
-                orderByClause = "DATE_PART('year', AGE(u.birthdate))";
+                orderByClause = "DATE_PART('year', AGE(u.birthdate))"
             }
 
             const nearbyQuery = `
@@ -511,7 +511,7 @@ userRoute.get(
                     ${interestsCondition}
                 ORDER BY ${orderByClause}
                 LIMIT 50;
-            `;
+            `
 
             // Build query parameters array
             const queryParams: any[] = [
@@ -523,14 +523,14 @@ userRoute.get(
                 minAge,
                 maxAge,
                 minFame
-            ];
+            ]
 
             // Add interest parameters if any
             if (interests.length > 0) {
-                queryParams.push(...interests);
+                queryParams.push(...interests)
             }
 
-            const nearbyResult = await db.getPool().query(nearbyQuery, queryParams);
+            const nearbyResult = await db.getPool().query(nearbyQuery, queryParams)
 
             return res.json({
                 current_location: {
@@ -546,13 +546,13 @@ userRoute.get(
                     interests: interests
                 },
                 users: nearbyResult.rows,
-            });
+            })
 
         } catch (err) {
-            return internalServerError(res, err, "Error finding nearby users");
+            return internalServerError(res, err, "Error finding nearby users")
         }
     }
-);
+)
 
 userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) => {
     try {

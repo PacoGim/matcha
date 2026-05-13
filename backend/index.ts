@@ -1,4 +1,4 @@
-import express from "express"
+import express, { Request, Response } from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import fs from "fs"
@@ -23,7 +23,7 @@ const options = {
     agent: new https.Agent({
         rejectUnauthorized: false
     })
-};
+}
 
 const app = express()
 db.initPool()
@@ -54,7 +54,7 @@ app.get('/images/:id/:idx', authenticateToken, (req, res) => {
 
 app.use(express.static(path.join(__dirname, "../frontend/build")))
 
-app.use((req, res) => {
+app.use((req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'))
 })
 
