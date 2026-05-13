@@ -11,6 +11,7 @@ import profileRoute from "./routes/Profile"
 
 import dotenv from "dotenv"
 import path from "path"
+import { authenticateToken } from "./middleware/auth"
 const __dirname = path.resolve()
 dotenv.config({
     path: path.resolve(__dirname, "../.env")
@@ -23,7 +24,6 @@ const options = {
         rejectUnauthorized: false
     })
 };
-
 
 const app = express()
 db.initPool()
@@ -42,11 +42,23 @@ app.use(cors({
 app.use("/", userRoute)
 app.use("/", profileRoute)
 
+
+app.get('/images/:id/:idx', authenticateToken, (req, res) => {
+    const { id, idx } = req.params
+    const imagePath = path.join(__dirname, `./images/${id}/${idx}.png`)
+    if (fs.existsSync(imagePath)) {
+        res.sendFile(imagePath)
+    } else {
+        res.status(404).send("Image not found")
+    }
+})
+
 app.use(express.static(path.join(__dirname, "../frontend/build")))
 
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'))
 })
+
 
 http.createServer(app).listen(HTTP_PORT, () => {
     console.log(`HTTP server started on port ${HTTP_PORT}`)
