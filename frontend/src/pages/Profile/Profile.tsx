@@ -63,9 +63,15 @@ export default function ProfilePage() {
         allow_gps: false,
     })
 
-    const { isInitializing } = useAuth()
+    const { isInitializing, isAuthenticated } = useAuth()
     const geocodeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const navigate = useNavigate()
+
+    useEffect(() => {
+        if (isAuthenticated === false) {
+            navigate('/')
+        }
+    }, [isAuthenticated])
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -85,14 +91,14 @@ export default function ProfilePage() {
 
                 const data: ProfileResponse = await response.json()
 
-                if (!response.ok) {
-                    console.log(response.status)
-                    console.log('Profile data: ', data.error)
+                if (response.status === 401) {
+                    return logout()
+                }
 
-                    logout()
+                if (!response.ok) {
                     throw new Error('Failed to fetch profile')
                 }
-                console.log('Profile data: ', JSON.stringify(data))
+
                 setUser(data.user)
                 setProfile(data.profile)
                 setFormData({
@@ -250,6 +256,10 @@ export default function ProfilePage() {
                     }
                 }),
             })
+
+            if ([401, 403].includes(response.status)) {
+                return logout()
+            }
 
             const data = await response.json()
 

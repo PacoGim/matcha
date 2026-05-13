@@ -38,8 +38,8 @@ export default function Login() {
         setLoading(true)
 
         try {
-
             const endpoint_login = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/login`
+
             const response = await fetch(endpoint_login, {
                 method: 'POST',
                 credentials: 'include',
@@ -49,11 +49,11 @@ export default function Login() {
                 body: JSON.stringify(formData),
             })
 
-            const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Login failed')
+                throw new Error('Login failed')
             }
+            const data = await response.json()
 
             // Store authenticated user in context; JWT is kept in an HttpOnly cookie
             login(data.user)
@@ -69,6 +69,7 @@ export default function Login() {
             }, 1000)
 
         } catch (err) {
+
             setError(err instanceof Error ? err.message : 'An error occurred')
         } finally {
             setLoading(false)
@@ -85,7 +86,6 @@ export default function Login() {
         })
 
         const data = await response.json()
-        console.log("Forgot password response:", data)
         if (!response.ok) {
             setError(data.error || 'Failed to send reset link')
         } else {
