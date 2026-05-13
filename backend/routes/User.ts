@@ -399,11 +399,12 @@ userRoute.get(
             if (!userId) {
                 return unauthorized(res, "Unauthorized")
             }
-
             const currentResult = await db.getPool().query(
                 `
                 SELECT
                     u.id,
+                    u.birthdate,
+                    u.fame_rating,
                     p.gender,
                     p.sexual_preference,
                     p.allow_gps,
@@ -433,34 +434,66 @@ userRoute.get(
                 });
             }
 
-            const maxDistanceKm =
-                Number(req.query.max_distance) || 50;
+            // Parse query parameters with defaults
+            const maxDistanceKm = Number(req.query.max_distance) || 50;
+            const minAge = Number(req.query.min_age) || 18;
+            const maxAge = Number(req.query.max_age) || 99;
+            const minFame = Number(req.query.min_fame) || 0;
+            const sortBy = (req.query.sort_by as string) || "distance"; // distance, fame, age
+            const interests = req.query.interests ? (req.query.interests as string).split(",") : [];
 
-            const maxDistanceMeters =
-                maxDistanceKm * 1000;
+            const maxDistanceMeters = maxDistanceKm * 1000;
 
-            const currentGender =
-                current.gender ?? null;
+            const currentGender = current.gender ?? null;
+            const currentPreference = current.sexual_preference ?? "both";
 
-            const currentPreference =
-                current.sexual_preference ?? "both";
+            // Build age filter
+            const ageFilterCondition = `
+                AND DATE_PART('year', AGE(u.birthdate)) >= $6
+                AND DATE_PART('year', AGE(u.birthdate)) <= $7
+            `;
+
+            // Build fame filter
+            const fameFilterCondition = `
+                AND u.fame_rating >= $8
+            `;
+
+            // Build interests filter
+            let interestsJoin = "";
+            let interestsCondition = "";
+            if (interests.length > 0) {
+                interestsJoin = `
+                    LEFT JOIN user_tags ut ON u.id = ut.user_id
+                    LEFT JOIN tags t ON ut.tag_id = t.id
+                `;
+                interestsCondition = `
+                    AND t.name IN (${interests.map((_, i) => `$${9 + i}`).join(",")})
+                `;
+            }
+
+            // Build order by clause
+            let orderByClause = "distance_km ASC";
+            if (sortBy === "fame") {
+                orderByClause = "u.fame_rating DESC";
+            } else if (sortBy === "age") {
+                orderByClause = "DATE_PART('year', AGE(u.birthdate))";
+            }
 
             const nearbyQuery = `
-                SELECT
+                SELECT DISTINCT
                     u.id,
                     u.username,
                     u.first_name,
                     u.last_name,
-
+                    DATE_PART('year', AGE(u.birthdate)) AS age,
+                    u.fame_rating,
                     p.gender,
                     p.sexual_preference,
                     p.biography,
                     p.location,
                     p.allow_gps,
-
                     ST_Y(p.coordinates::geometry) AS latitude,
                     ST_X(p.coordinates::geometry) AS longitude,
-
                     ROUND(
                         (
                             ST_Distance(
@@ -470,65 +503,66 @@ userRoute.get(
                         )::numeric,
                         2
                     ) AS distance_km
-
                 FROM users u
-
-                JOIN profiles p
-                    ON u.id = p.user_id
-
+                JOIN profiles p ON u.id = p.user_id
+                ${interestsJoin}
                 WHERE u.id != $2
-
                     AND p.allow_gps = true
-
                     AND p.coordinates IS NOT NULL
-
                     AND p.gender::text != 'null'
-
                     AND (
-                            $3 = 'both'
-                            OR p.gender::text = $3
+                        $3 = 'both'
+                        OR p.gender::text = $3
                     )
-
                     AND (
-                            $4::text IS NULL
-                            OR p.sexual_preference::text = 'both'
-                            OR p.sexual_preference::text = $4::text
+                        $4::text IS NULL
+                        OR p.sexual_preference::text = 'both'
+                        OR p.sexual_preference::text = $4::text
                     )
-
                     AND ST_DWithin(
-                            p.coordinates,
-                            $1,
-                            $5
+                        p.coordinates,
+                        $1,
+                        $5
                     )
-
-                ORDER BY ST_Distance(
-                    p.coordinates,
-                    $1
-                )
-
-                LIMIT 20;
+                    ${ageFilterCondition}
+                    ${fameFilterCondition}
+                    ${interestsCondition}
+                ORDER BY ${orderByClause}
+                LIMIT 50;
             `;
 
-            const nearbyResult =
-                await db.getPool().query(
-                    nearbyQuery,
-                    [
-                        current.coordinates,
-                        userId,
-                        currentPreference,
-                        currentGender,
-                        maxDistanceMeters,
-                    ]
-                );
+            // Build query parameters array
+            const queryParams: any[] = [
+                current.coordinates,
+                userId,
+                currentPreference,
+                currentGender,
+                maxDistanceMeters,
+                minAge,
+                maxAge,
+                minFame
+            ];
+
+            // Add interest parameters if any
+            if (interests.length > 0) {
+                queryParams.push(...interests);
+            }
+
+            const nearbyResult = await db.getPool().query(nearbyQuery, queryParams);
 
             return res.json({
                 current_location: {
                     latitude: current.latitude,
                     longitude: current.longitude,
                 },
-
-                max_distance_km: maxDistanceKm,
-
+                filters: {
+                    max_distance_km: maxDistanceKm,
+                    min_age: minAge,
+                    max_age: maxAge,
+                    min_fame: minFame,
+                    sort_by: sortBy,
+                    interests: interests
+                },
                 users: nearbyResult.rows,
             });
 

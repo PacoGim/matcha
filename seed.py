@@ -5,6 +5,7 @@ import math
 import os
 import random
 import urllib.request
+from datetime import date, timedelta
 
 import psycopg
 
@@ -15,7 +16,7 @@ DB_NAME = os.getenv("DB_NAME", "matcha_db")
 DB_USER = os.getenv("DB_USER", "matcha_user")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "matcha_password")
 
-NB_USERS = int(os.getenv("NB_USERS", "50"))
+NB_USERS = int(os.getenv("NB_USERS", "500"))
 
 PARIS_LAT = 48.8566
 PARIS_LON = 2.3522
@@ -84,6 +85,20 @@ def ensure_unique_username(username, used_usernames):
     return username
 
 
+def random_birthdate(min_age=18, max_age=60):
+    today = date.today()
+
+    # Oldest and youngest birthdate boundaries
+    oldest_birthdate = today.replace(year=today.year - max_age)
+    youngest_birthdate = today.replace(year=today.year - min_age)
+
+    # Random date between those two
+    delta_days = (youngest_birthdate - oldest_birthdate).days
+    random_days = random.randint(0, delta_days)
+
+    return (oldest_birthdate + timedelta(days=random_days)).isoformat()
+
+
 def generate_users():
     raw_users = fetch_random_users(NB_USERS)
 
@@ -121,7 +136,7 @@ def generate_users():
                 "$2b$10$S/TOfkABQGcCr.tf3PsBSO9/gVWh6VPT5KV3iCabLrWXRQkxbdBu2",
             "first_name": item["name"]["first"].strip(),
             "last_name": item["name"]["last"].strip(),
-            "birthdate": "1990-01-01",
+            "birthdate": random_birthdate(),
             "gender": gender,
             "sexual_preference": random.choice(
                 ["male", "female", "both"]

@@ -6,6 +6,7 @@ import CheckEmail from './pages/CheckEmail/CheckEmail';
 import Login from './pages/Login/Login';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import Profile from './pages/Profile/Profile';
+import Search from './pages/Search/Search';
 import NotFound from './pages/NotFound/NotFound';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -24,6 +25,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/search" element={<Search />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>

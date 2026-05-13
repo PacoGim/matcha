@@ -69,6 +69,14 @@ function Navbar() {
                         <>
                             <li className="navbar-item">
                                 <Link
+                                    to="/search"
+                                    className={`navbar-link ${location.pathname === '/search' ? 'active' : ''}`}
+                                >
+                                    Search
+                                </Link>
+                            </li>
+                            <li className="navbar-item">
+                                <Link
                                     to="/profile"
                                     className={`navbar-link ${location.pathname === '/profile' ? 'active' : ''}`}
                                 >
