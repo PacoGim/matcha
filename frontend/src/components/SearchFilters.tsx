@@ -71,6 +71,13 @@ export default function SearchFilters({
   return (
     <div className="search-filters">
       <h2>Search Filters</h2>
+      <button
+          className="search-button"
+          onClick={onSearch}
+          disabled={loading}
+        >
+          {loading ? 'Searching...' : 'Search'}
+        </button>
 
       <div className="filter-group">
         <label htmlFor="ageRange">Age Range</label>
@@ -185,13 +192,7 @@ export default function SearchFilters({
           <option value="age">Sort By: Age</option>
         </select>
 
-        <button
-          className="search-button"
-          onClick={onSearch}
-          disabled={loading}
-        >
-          {loading ? 'Searching...' : 'Search'}
-        </button>
+        
       </div>
     </div>
   );

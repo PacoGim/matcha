@@ -170,6 +170,10 @@
 .profile-content {
   flex: 1;
   min-width: 0;
+  img {
+    max-width: 256px;
+    border-radius: 50%;
+  }
 }
 
 .profile-header {

@@ -8,7 +8,19 @@ import handleLogout from '../functions/handleLogout.fn'
 function Navbar() {
     const { user, isAuthenticated, logout } = useAuth()
 
+    const paths = [
+        {
+            to: '/',
+            name: 'Home'
+        },
+        {
+            to: '/about',
+            name: 'About'
+        }
+    ]
+
     const privatePaths = [
+        ...paths,
         {
             to: '/search',
             name: 'Search'
@@ -20,14 +32,7 @@ function Navbar() {
     ]
 
     const publicPaths = [
-        {
-            to: '/',
-            name: 'Home'
-        },
-        {
-            to: '/about',
-            name: 'About'
-        },
+        ...paths,
         {
             to: '/register',
             name: 'Register'
@@ -64,11 +69,12 @@ function Navbar() {
                                 </>
                             )
                             :
-                            (<></>)
+                            (<>
+                                {publicPaths.map((route, idx) => <Navitem key={idx} to={route.to} name={route.name} />)}
+
+                            </>)
                     }
-                    {
-                        publicPaths.map((route, idx) => <Navitem key={idx} to={route.to} name={route.name} />)
-                    }
+
 
                 </ul>
             </div>

@@ -253,7 +253,7 @@ def insert_users(conn, users):
     return user_ids
 
 
-def create_bob(conn):
+def create_bob():
     bob = {
         "email": "b@b.b",
         "username": "bob",
@@ -272,8 +272,9 @@ def create_bob(conn):
         "allow_gps": True,
         "fame_rating": 42,
     }
+    return bob
 
-    insert_users(conn, [bob])
+    # insert_users(conn, [bob])
 
 
 def create_tags(conn):
@@ -392,12 +393,13 @@ def main():
 
         print(f"[*] Generating {NB_USERS} users...")
         users = generate_users()
+        users.append(create_bob())
 
         print("[*] Inserting users/profiles...")
         user_ids = insert_users(conn, users)
 
-        print("[*] Creating Bob...")
-        create_bob(conn)
+        # print("[*] Creating Bob...")
+        # create_bob(conn)
 
         print("[*] Assigning tags...")
         assign_random_tags(conn)

@@ -1,6 +1,7 @@
 import React from 'react';
 import './SearchResults.css';
 import { UserProfile } from '../types';
+import ProfileCard from './ProfileCard';
 
 export interface SearchResultWithDistance extends UserProfile {
   distance_km?: number;
@@ -59,24 +60,25 @@ export default function SearchResults({
 
       <div className="results-grid">
         {results.map(profile => (
-          <div key={profile.id} className="profile-result-card">
-            <img
-              src={getProfileImage(profile)}
-              alt={`${profile.first_name} ${profile.last_name}`}
-              className="profile-image"
-            />
-            <div className="profile-overlay">
-              <button className="like-button" onClick={() => onLike(profile.id)}>
-                ♥
-              </button>
-            </div>
-            <div className="profile-info">
-              <h3>
-                {profile.first_name}, {getAge(profile)}
-              </h3>
-              <p className="distance">{getDistance(profile)}</p>
-            </div>
-          </div>
+          <ProfileCard
+            key={profile.id}
+            profile={profile}
+            onLike={onLike}
+          />
+          // <div key={profile.id} className="profile-result-card">
+          //   <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${profile.id}/1`} alt={`Profile image of ${profile.username}`} />
+          //   <div className="profile-overlay">
+          //     <button className="like-button" onClick={() => onLike(profile.id)}>
+          //       ♥
+          //     </button>
+          //   </div>
+          //   <div className="profile-info">
+          //     <h3>
+          //       {profile.first_name}, {getAge(profile)}
+          //     </h3>
+          //     <p className="distance">{getDistance(profile)}</p>
+          //   </div>
+          // </div>
         ))}
       </div>
     </div>

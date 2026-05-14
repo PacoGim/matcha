@@ -3,7 +3,7 @@ import './ProfileCard.css'
 
 interface ProfileCardProps {
     profile: UserProfile
-    onLike?: (userId: string) => void
+    onLike: (userId: string) => void
     onPass?: (userId: string) => void
     onViewProfile?: (userId: string) => void
     compact?: boolean
@@ -16,9 +16,6 @@ export default function ProfileCard({
     onPass,
     onViewProfile
 }: ProfileCardProps) {
-    const { id, username, age } = profile
-    const { gender, biography, location, sexual_preference } = profile.profile
-
     const getGenderIcon = (gender: string) => {
         switch (gender) {
             case 'male':
@@ -44,24 +41,38 @@ export default function ProfileCard({
     }
 
     return (
-        <div className="profile-card">
-            <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${id}/1`} alt={`Profile image of ${profile.username}`} />
-
-            <h3>
-                {username} {getGenderIcon(gender)} ({age})
-            </h3>
-
-            <p>📍 {location}</p>
-
-            <p>Interested in: {getPreferenceText(sexual_preference)}</p>
-
-            <p>{biography}</p>
-
-            <div className="profile-actions">
-                <button onClick={() => onPass?.(id)}>❌</button>
-                <button onClick={() => onViewProfile?.(id)}>👁️</button>
-                <button onClick={() => onLike?.(id)}>❤️</button>
+        <div key={profile.id} className="profile-result-card">
+            <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${profile.id}/1`} alt={`Profile image of ${profile.username}`} />
+            <div className="profile-overlay">
+                <button className="like-button" onClick={() => onLike(profile.id)}>
+                    ♥
+                </button>
+            </div>
+            <div className="profile-info">
+                <h3>
+                    {profile.first_name}, {profile.age}
+                </h3>
+                {/* <p className="distance">{profile.distance_km} km away</p> */}
             </div>
         </div>
+        // <div className="profile-card">
+        //     <img className='profile-photo' src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${id}/1`} alt={`Profile image of ${username}`} />
+
+        //     <h3>
+        //         {username} {getGenderIcon(gender)} ({age})
+        //     </h3>
+
+        //     <p>📍 {location}</p>
+
+        //     <p>Interested in: {getPreferenceText(sexual_preference)}</p>
+
+        //     <p>{biography}</p>
+
+        //     <div className="profile-actions">
+        //         <button onClick={() => onPass?.(id)}>❌</button>
+        //         <button onClick={() => onViewProfile?.(id)}>👁️</button>
+        //         <button onClick={() => onLike?.(id)}>❤️</button>
+        //     </div>
+        // </div>
     )
 }

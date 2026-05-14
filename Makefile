@@ -20,6 +20,7 @@ reset:
 	-podman unshare rm -rf data/postgres
 	rm -rf data
 	rm -rf venv
+	rm -rf backend/images
 
 seed:
 	export $(grep -v '^#' .env | xargs)
