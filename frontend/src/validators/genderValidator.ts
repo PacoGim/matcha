@@ -1,15 +1,11 @@
 // Gender validation rules
 // This file is shared between frontend and backend
 
-export interface ValidationError {
-    field: string;
-    message?: string;
-    error?: string;
-}
+import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
 export const GENDER_VALUES = ['male', 'female', 'other', 'null'] as const
 
-export function validateGender(gender: unknown): ValidationError | null {
+export function validateGender(gender: unknown): ValidationErrorType | null {
     if (gender === undefined || gender === null) {
         return null
     }

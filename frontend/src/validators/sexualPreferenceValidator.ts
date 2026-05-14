@@ -1,15 +1,11 @@
 // Sexual preference validation rules
 // This file is shared between frontend and backend
 
-export interface ValidationError {
-    field: string;
-    message?: string;
-    error?: string;
-}
+import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
 export const SEXUAL_PREFERENCE_VALUES = ['male', 'female', 'both'] as const
 
-export function validateSexualPreference(value: unknown): ValidationError | null {
+export function validateSexualPreference(value: unknown): ValidationErrorType | null {
     if (value === undefined || value === null) {
         return null
     }

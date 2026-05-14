@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+// @ts-ignore
 import './ResetPassword.css';
 import Navbar from '../../components/Navbar';
 import { validatePassword } from '../../validators/passwordValidator';
@@ -27,7 +28,7 @@ export default function ResetPassword() {
         }
 
         const passwordError = validatePassword(newPassword);
-        if (passwordError) {
+        if (passwordError?.message) {
             setError(passwordError.message);
             setLoading(false);
             return;

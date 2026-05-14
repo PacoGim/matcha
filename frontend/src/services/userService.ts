@@ -1,4 +1,4 @@
-import { UserProfile } from '../types';
+import type { UserProfileType } from '../../../interfaces/User.type';
 
 const PARIS_LAT = 48.8566;
 const PARIS_LON = 2.3522;
@@ -9,10 +9,10 @@ const PARIS_LON = 2.3522;
 
 export async function fetchSuggestedProfiles(
     count: number = 20
-): Promise<UserProfile[]> {
+): Promise<UserProfileType[]> {
     try {
         const endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/profiles?count=${count}`
-        
+
         const response = await fetch(endpoint, {
             method: 'GET',
             credentials: 'include',
@@ -20,12 +20,12 @@ export async function fetchSuggestedProfiles(
                 'Content-Type': 'application/json',
             },
         });
-        
-        if (!response.ok) {            
+
+        if (!response.ok) {
             throw new Error(`Failed to fetch profiles: ${response.status}`)
         }
-        
-        const profiles: UserProfile[] = await response.json();
+
+        const profiles: UserProfileType[] = await response.json();
         return profiles;
     } catch (error) {
         console.error(
@@ -41,7 +41,7 @@ export async function fetchSuggestedProfiles(
    Current user
 ------------------------------ */
 
-export function getCurrentUser(): UserProfile {
+export function getCurrentUser(): UserProfileType {
     return {
         id: 'current-user',
 
@@ -52,7 +52,7 @@ export function getCurrentUser(): UserProfile {
         first_name: 'Alex',
 
         age: 30,
-        
+
         last_name: 'Johnson',
 
         is_verified: true,
@@ -64,17 +64,6 @@ export function getCurrentUser(): UserProfile {
         ).toISOString(),
 
         updated_at: new Date().toISOString(),
-
-        photos: {
-            large:
-                'https://randomuser.me/api/portraits/men/32.jpg',
-
-            medium:
-                'https://randomuser.me/api/portraits/med/men/32.jpg',
-
-            thumbnail:
-                'https://randomuser.me/api/portraits/thumb/men/32.jpg'
-        },
 
         profile: {
             user_id: 'current-user',
@@ -118,7 +107,7 @@ export async function fetchNearbyUsers(
         interests?: string[];
         sortBy?: 'distance' | 'fame' | 'age';
     }
-): Promise<UserProfile[]> {
+): Promise<UserProfileType[]> {
     try {
         const queryParams = new URLSearchParams({
             min_age: (filters?.minAge || 18).toString(),
@@ -133,7 +122,7 @@ export async function fetchNearbyUsers(
         }
 
         const endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/nearby?${queryParams.toString()}`;
-        
+
         const response = await fetch(endpoint, {
             method: 'GET',
             credentials: 'include',
@@ -141,11 +130,11 @@ export async function fetchNearbyUsers(
                 'Content-Type': 'application/json',
             },
         });
-        
+
         if (!response.ok) {
             throw new Error(`Failed to fetch nearby users: ${response.status}`);
         }
-        
+
         const data = await response.json();
         return data.users || [];
     } catch (error) {

@@ -1,25 +1,14 @@
-import React from 'react';
+// @ts-ignore
 import './SearchResults.css';
-import { UserProfile } from '../types';
 import ProfileCard from './ProfileCard';
-
-export interface SearchResultWithDistance extends UserProfile {
-  distance_km?: number;
-}
-
-interface SearchResultsProps {
-  results: SearchResultWithDistance[];
-  loading: boolean;
-  totalResults: number;
-  onLike: (userId: string) => void;
-}
+import type { SearchResultsType } from '../../../interfaces/SearchResults.type';
 
 export default function SearchResults({
   results,
   loading,
   totalResults,
   onLike,
-}: SearchResultsProps) {
+}: SearchResultsType) {
   if (loading) {
     return (
       <div className="search-results">
@@ -35,21 +24,6 @@ export default function SearchResults({
       </div>
     );
   }
-
-  const getProfileImage = (profile: SearchResultWithDistance): string => {
-    return profile.photos?.large || 'https://via.placeholder.com/300x400?text=No+Photo';
-  };
-
-  const getAge = (profile: SearchResultWithDistance): number => {
-    return profile.age || 0;
-  };
-
-  const getDistance = (profile: SearchResultWithDistance): string => {
-    if (profile.distance_km !== undefined) {
-      return `${profile.distance_km}km away`;
-    }
-    return '0km away';
-  };
 
   return (
     <div className="search-results">

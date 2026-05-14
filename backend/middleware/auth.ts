@@ -2,16 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import unauthorized from '../errorHttp/unauthorized';
 import forbidden from '../errorHttp/forbidden';
+import type { AuthRequestType } from '../..//interfaces/AuthRequest.type';
 
-export interface AuthRequest extends Request {
-    user?: {
-        id: string;
-        email: string;
-        username: string;
-    };
-}
-
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = (req: AuthRequestType, res: Response, next: NextFunction) => {
     const token = req.cookies?.token;
     if (!token) {
         return unauthorized(res, 'Access token required');

@@ -1,18 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface User {
-    id: string;
-    email: string;
-    username: string;
-}
-
-interface AuthContextType {
-    user: User | null;
-    login: (user: User) => void;
-    logout: (message?: string) => void;
-    isAuthenticated: boolean;
-    isInitializing: boolean;
-}
+import type { BaseUserType } from '../../../interfaces/User.type';
+import { AuthContextType, AuthProviderType } from '../../../interfaces/AuthContext.type';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -24,12 +13,8 @@ export const useAuth = () => {
     return context;
 };
 
-interface AuthProviderProps {
-    children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
+export const AuthProvider: React.FC<AuthProviderType> = ({ children }) => {
+    const [user, setUser] = useState<BaseUserType | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
 
     useEffect(() => {
@@ -58,7 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         loadUser();
     }, []);
 
-    const login = (userData: User) => {
+    const login = (userData: BaseUserType) => {
         setUser(userData);
     };
 

@@ -1,54 +1,23 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+// @ts-ignore
 import './Profile.css'
 import Navbar from '../../components/Navbar'
 import LocationPicker from '../../components/LocationPicker'
 import { useAuth } from '../../contexts/AuthContext'
 import { validateName } from '../../validators/nameValidator'
-
-interface User {
-    id: string
-    email: string
-    username: string
-    first_name: string
-    last_name: string
-    age: number
-    is_verified: boolean
-    fame_rating: number
-    created_at: string
-    updated_at: string
-}
-
-interface Profile {
-    gender: string
-    sexual_preference: string
-    biography: string
-    location: string
-    latitude: number
-    longitude: number
-    allow_gps: boolean
-}
-
-interface ProfileResponse {
-    user: User
-    error: string
-    profile: Profile
-}
-
-interface FieldErrors {
-    [key: string]: string
-}
+import { UserProfileType } from '../../../../interfaces/User.type'
+import { FieldErrorType } from '../../../../interfaces/FieldError.type'
 
 export default function ProfilePage() {
-    const [user, setUser] = useState<User | null>(null)
-    const [profile, setProfile] = useState<Profile | null>(null)
+    const [userProfile, setUserProfile] = useState<UserProfileType | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [successMessage, setSuccessMessage] = useState('')
     const [isEditing, setIsEditing] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'prompt' | null>(null)
-    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+    const [fieldErrors, setFieldErrors] = useState<FieldErrorType>({})
     const { logout } = useAuth()
 
     const [formData, setFormData] = useState({
@@ -90,7 +59,7 @@ export default function ProfilePage() {
                     },
                 })
 
-                const data: ProfileResponse = await response.json()
+                const data: UserProfileType = await response.json()
 
                 if (response.status === 401) {
                     return logout()
@@ -100,12 +69,11 @@ export default function ProfilePage() {
                     throw new Error('Failed to fetch profile')
                 }
 
-                setUser(data.user)
-                setProfile(data.profile)
+                setUserProfile(data)
                 setFormData({
-                    email: data.user.email,
-                    first_name: data.user.first_name,
-                    last_name: data.user.last_name,
+                    email: data.email,
+                    first_name: data.first_name,
+                    last_name: data.last_name,
                     gender: data.profile.gender,
                     sexual_preference: data.profile.sexual_preference,
                     biography: data.profile.biography,
@@ -196,7 +164,7 @@ export default function ProfilePage() {
         setSuccessMessage('')
         setFieldErrors({})
 
-        const newErrors: FieldErrors = {}
+        const newErrors: FieldErrorType = {}
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
         if (!formData.email || !emailRegex.test(formData.email)) {
@@ -204,12 +172,12 @@ export default function ProfilePage() {
         }
 
         const firstNameError = validateName(formData.first_name, 'first_name')
-        if (firstNameError) {
-            newErrors[firstNameError.field] = firstNameError.message
+        if (firstNameError?.field) {
+            newErrors[firstNameError?.field] = firstNameError.message
         }
 
         const lastNameError = validateName(formData.last_name, 'last_name')
-        if (lastNameError) {
+        if (lastNameError?.field) {
             newErrors[lastNameError.field] = lastNameError.message
         }
 
@@ -266,7 +234,7 @@ export default function ProfilePage() {
 
             if (!response.ok) {
                 if (data && Array.isArray(data.errors)) {
-                    const errors = data.errors.reduce((acc: FieldErrors, err: any) => {
+                    const errors = data.errors.reduce((acc: FieldErrorType, err: any) => {
                         if (err && err.field && err.error) {
                             acc[err.field] = err.error
                         }
@@ -281,11 +249,11 @@ export default function ProfilePage() {
                 throw new Error(data.error || 'Failed to update profile')
             }
 
-            const result: ProfileResponse = data
-            setUser(result.user)
-            setProfile(result.profile)
+            const result: UserProfileType = data.user
+            setUserProfile(result)
             setIsEditing(false)
-            setSuccessMessage('Profile updated successfully!')
+            const message = data.message || 'Profile updated successfully!'
+            setSuccessMessage(message)
             setTimeout(() => setSuccessMessage(''), 3000)
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred')
@@ -295,18 +263,18 @@ export default function ProfilePage() {
     }
 
     const handleCancel = () => {
-        if (user && profile) {
+        if (userProfile) {
             setFormData({
-                email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                gender: profile.gender,
-                sexual_preference: profile.sexual_preference,
-                biography: profile.biography,
-                location: profile.location,
-                latitude: profile.latitude,
-                longitude: profile.longitude,
-                allow_gps: profile.allow_gps,
+                email: userProfile.email,
+                first_name: userProfile.first_name,
+                last_name: userProfile.last_name,
+                gender: userProfile.profile.gender,
+                sexual_preference: userProfile.profile.sexual_preference,
+                biography: userProfile.profile.biography,
+                location: userProfile.profile.location,
+                latitude: userProfile.profile.latitude,
+                longitude: userProfile.profile.longitude,
+                allow_gps: userProfile.profile.allow_gps,
             })
         }
         setFieldErrors({})
@@ -409,11 +377,11 @@ export default function ProfilePage() {
                 {error && <div className="error-message">{error}</div>}
                 {successMessage && <div className="success-message">{successMessage}</div>}
 
-                {user && profile && (
+                {userProfile && (
                     <div className="profile-content">
                         {!isEditing ? (
                             <>
-                                <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${user.id}/1`} alt="Profile" />
+                                <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${userProfile.id}/1`} alt="Profile" />
                                 <div className="two-pane-grid">
                                     {/* User Data Pane */}
                                     <div className="pane user-pane">
@@ -421,27 +389,27 @@ export default function ProfilePage() {
                                         <div className="info-group">
                                             <div className="info-field">
                                                 <label>Username:</label>
-                                                <span>{user.username} ({user.age})</span>
+                                                <span>{userProfile.username} ({userProfile.age})</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Email:</label>
-                                                <span>{user.email}</span>
+                                                <span>{userProfile.email}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>First Name:</label>
-                                                <span>{user.first_name}</span>
+                                                <span>{userProfile.first_name}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Last Name:</label>
-                                                <span>{user.last_name}</span>
+                                                <span>{userProfile.last_name}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Fame Rating:</label>
-                                                <span>{user.fame_rating}</span>
+                                                <span>{userProfile.fame_rating}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Member since:</label>
-                                                <span>{new Date(user.created_at).toLocaleDateString()}</span>
+                                                <span>{new Date(userProfile .created_at).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -452,31 +420,31 @@ export default function ProfilePage() {
                                         <div className="info-group">
                                             <div className="info-field">
                                                 <label>Gender:</label>
-                                                <span>{profile.gender}</span>
+                                                <span>{userProfile.profile.gender}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Sexual Preference:</label>
-                                                <span>{profile.sexual_preference}</span>
+                                                <span>{userProfile.profile.sexual_preference}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Location:</label>
-                                                <span>{profile.location}</span>
+                                                <span>{userProfile.profile.location}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Latitude:</label>
-                                                <span>{profile.latitude}</span>
+                                                <span>{userProfile.profile.latitude}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Longitude:</label>
-                                                <span>{profile.longitude}</span>
+                                                <span>{userProfile.profile.longitude}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Allow GPS Tracking:</label>
-                                                <span>{profile.allow_gps ? 'Yes' : 'No'}</span>
+                                                <span>{userProfile.profile.allow_gps ? 'Yes' : 'No'}</span>
                                             </div>
                                             <div className="info-field">
                                                 <label>Biography:</label>
-                                                <span className="biography-text">{profile.biography}</span>
+                                                <span className="biography-text">{userProfile.profile.biography}</span>
                                             </div>
                                         </div>
                                     </div>

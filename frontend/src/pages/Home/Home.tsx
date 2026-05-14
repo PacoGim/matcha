@@ -3,10 +3,10 @@ import './Home.css';
 import Navbar from '../../components/Navbar';
 import ProfileCard from '../../components/ProfileCard';
 import { fetchSuggestedProfiles } from '../../services/userService';
-import { UserProfile } from '../../types';
+import type { UserProfileType } from '../../../../interfaces/User.type';
 
 export default function Home() {
-  const [suggestedProfiles, setSuggestedProfiles] = useState<UserProfile[]>([]);
+  const [suggestedProfiles, setSuggestedProfiles] = useState<UserProfileType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 

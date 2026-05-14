@@ -1,10 +1,7 @@
 // Password validation rules
 // This file is shared between frontend and backend
 
-export interface ValidationError {
-    field: string;
-    message: string;
-}
+import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
 // Common dictionary words to avoid (case insensitive)
 const COMMON_DICTIONARY_WORDS = [
@@ -40,7 +37,7 @@ export const PASSWORD_RULES = {
     FORBIDDEN_WORDS: COMMON_DICTIONARY_WORDS,
 };
 
-export function validatePassword(password: string): ValidationError | null {
+export function validatePassword(password: string): ValidationErrorType | null {
     if (!password || password.trim() === '') {
         return {
             field: 'password',

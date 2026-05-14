@@ -1,10 +1,7 @@
 // Username validation rules
 // This file is shared between frontend and backend
 
-export interface ValidationError {
-    field: string;
-    message: string;
-}
+import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
 export const USERNAME_RULES = {
     MIN_LENGTH: 3,
@@ -12,7 +9,7 @@ export const USERNAME_RULES = {
     PATTERN: /^[a-zA-Z][a-zA-Z0-9_]*$/, // Starts with letter, contains letters, numbers, underscores
 };
 
-export function validateUsername(username: string): ValidationError | null {
+export function validateUsername(username: string): ValidationErrorType | null {
     if (!username || username.trim() === '') {
         return {
             field: 'username',

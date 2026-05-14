@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import type { LocationPickerType } from '../../../interfaces/LocationPicker.type';
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -11,14 +12,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-interface LocationPickerProps {
-  latitude: number;
-  longitude: number;
-  onLocationChange: (lat: number, lng: number) => void;
-  allowEdit?: boolean;
-}
-
-const LocationPicker: React.FC<LocationPickerProps> = ({
+const LocationPicker: React.FC<LocationPickerType> = ({
   latitude,
   longitude,
   onLocationChange,

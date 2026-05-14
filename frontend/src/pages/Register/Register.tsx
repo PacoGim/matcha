@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+// @ts-ignore
 import './Register.css'
 import Navbar from '../../components/Navbar'
 import { validateUsername, getValidationRulesDescription } from '../../validators/usernameValidator'
@@ -7,6 +8,7 @@ import { validatePassword, getValidationRulesDescription as getPasswordValidatio
 import { validateBirthdate, getValidationRulesDescription as getBirthValidationRulesDescription } from '../../validators/birthdateValidator'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { FieldErrorType } from '../../../../interfaces/FieldError.type'
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -19,7 +21,7 @@ export default function Register() {
     })
     const [message, setMessage] = useState('')
     const [error, setError] = useState('')
-    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
+    const [fieldErrors, setFieldErrors] = useState<FieldErrorType>({})
     const [loading, setLoading] = useState(false)
     const { isAuthenticated } = useAuth()
     const navigate = useNavigate()
@@ -56,7 +58,7 @@ export default function Register() {
         setLoading(true)
 
         // Accumulate all errors
-        const newErrors: { [key: string]: string } = {}
+        const newErrors: FieldErrorType = {}
 
         // Client-side validation for username
         const usernameError = validateUsername(formData.username)

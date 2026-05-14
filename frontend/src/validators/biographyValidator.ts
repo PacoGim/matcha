@@ -1,17 +1,13 @@
 // Biography validation rules
 // This file is shared between frontend and backend
 
-export interface ValidationError {
-    field: string;
-    message?: string;
-    error?: string;
-}
+import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
 export const BIOGRAPHY_RULES = {
     MAX_LENGTH: 100,
 }
 
-export function validateBiography(biography: unknown): ValidationError | null {
+export function validateBiography(biography: unknown): ValidationErrorType | null {
     if (biography === undefined || biography === null) {
         return null
     }

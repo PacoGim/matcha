@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import Navbar from '../../components/Navbar';
+// @ts-ignore
 import './Search.css';
-import SearchFilters, { SearchFiltersState } from '../../components/SearchFilters';
 import SearchResults from '../../components/SearchResults';
 import { fetchNearbyUsers } from '../../services/userService';
-import { UserProfile } from '../../types';
+import { UserProfileType } from '../../../../interfaces/User.type';
+import { SearchFiltersStateType } from '../../../../interfaces/SearchFiltersState.type';
+import SearchFilters from '../../components/SearchFilters';
 
-export interface SearchResultWithDistance extends UserProfile {
-  distance_km?: number;
-}
 
 export default function Search() {
-  const [filters, setFilters] = useState<SearchFiltersState>({
+  const [filters, setFilters] = useState<SearchFiltersStateType>({
     minAge: 22,
     maxAge: 34,
     minFame: 0,
@@ -20,7 +19,7 @@ export default function Search() {
     sortBy: 'distance',
   });
 
-  const [results, setResults] = useState<SearchResultWithDistance[]>([]);
+  const [results, setResults] = useState<UserProfileType[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalResults, setTotalResults] = useState(0);
 
@@ -28,7 +27,7 @@ export default function Search() {
     setLoading(true);
     try {
       const users = await fetchNearbyUsers(filters);
-      setResults(users as SearchResultWithDistance[]);
+      setResults(users as UserProfileType[]);
       setTotalResults(users.length);
     } catch (error) {
       console.error('Error searching nearby users:', error);
@@ -39,7 +38,7 @@ export default function Search() {
     }
   };
 
-  const handleFilterChange = (newFilters: Partial<SearchFiltersState>) => {
+  const handleFilterChange = (newFilters: Partial<SearchFiltersStateType>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
   };
 

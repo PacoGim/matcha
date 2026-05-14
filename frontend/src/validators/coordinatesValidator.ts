@@ -1,13 +1,9 @@
 // Coordinates and GPS validation rules
 // This file is shared between frontend and backend
 
-export interface ValidationError {
-    field: string;
-    message?: string;
-    error?: string;
-}
+import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
-export function validateLatitude(latitude: unknown): ValidationError | null {
+export function validateLatitude(latitude: unknown): ValidationErrorType | null {
     if (latitude === undefined || latitude === null) {
         return null
     }
@@ -31,7 +27,7 @@ export function validateLatitude(latitude: unknown): ValidationError | null {
     return null
 }
 
-export function validateLongitude(longitude: unknown): ValidationError | null {
+export function validateLongitude(longitude: unknown): ValidationErrorType | null {
     if (longitude === undefined || longitude === null) {
         return null
     }
@@ -55,7 +51,7 @@ export function validateLongitude(longitude: unknown): ValidationError | null {
     return null
 }
 
-export function validateAllowGps(allowGps: unknown): ValidationError | null {
+export function validateAllowGps(allowGps: unknown): ValidationErrorType | null {
     if (allowGps === undefined || allowGps === null) {
         return null
     }

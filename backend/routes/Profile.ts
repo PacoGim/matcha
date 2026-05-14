@@ -1,8 +1,9 @@
 import { Router } from "express"
 import db from "../database/db"
-import { authenticateToken, AuthRequest } from "../middleware/auth"
+import { authenticateToken } from "../middleware/auth"
 import unauthorized from "../errorHttp/unauthorized"
 import internalServerError from "../errorHttp/internalServerError"
+import type { AuthRequestType } from "../../interfaces/AuthRequest.type"
 
 const profileRoute = Router()
 
@@ -16,7 +17,7 @@ profileRoute.get("/profile/:id", async (req, res) => {
     }
 })
 
-profileRoute.get("/profiles", authenticateToken, async (req: AuthRequest, res) => {
+profileRoute.get("/profiles", authenticateToken, async (req: AuthRequestType, res) => {
     try {
         const currentUserId = req.user?.id
         if (!currentUserId) {

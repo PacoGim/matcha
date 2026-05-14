@@ -1,21 +1,12 @@
-import { UserProfile } from '../types'
 import './ProfileCard.css'
-
-interface ProfileCardProps {
-    profile: UserProfile
-    onLike: (userId: string) => void
-    onPass?: (userId: string) => void
-    onViewProfile?: (userId: string) => void
-    compact?: boolean
-    gridView?: boolean
-}
+import type { ProfileCardType } from '../../../interfaces/ProfileCard.type'
 
 export default function ProfileCard({
     profile,
     onLike,
     onPass,
     onViewProfile
-}: ProfileCardProps) {
+}: ProfileCardType) {
     const getGenderIcon = (gender: string) => {
         switch (gender) {
             case 'male':

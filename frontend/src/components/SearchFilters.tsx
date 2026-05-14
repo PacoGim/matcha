@@ -1,21 +1,6 @@
 import React from 'react';
 import './SearchFilters.css';
-
-export interface SearchFiltersState {
-  minAge: number;
-  maxAge: number;
-  minFame: number;
-  maxDistance: number;
-  interests: string[];
-  sortBy: 'distance' | 'fame' | 'age';
-}
-
-interface SearchFiltersProps {
-  filters: SearchFiltersState;
-  onFilterChange: (filters: Partial<SearchFiltersState>) => void;
-  onSearch: () => void;
-  loading: boolean;
-}
+import type { SearchFiltersType } from '../../../interfaces/SearchFilters.type';
 
 const AVAILABLE_INTERESTS = [
   'Ceramics',
@@ -37,7 +22,7 @@ export default function SearchFilters({
   onFilterChange,
   onSearch,
   loading,
-}: SearchFiltersProps) {
+}: SearchFiltersType) {
   const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
     if (e.target.id === 'minAge') {

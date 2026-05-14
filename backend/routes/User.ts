@@ -11,7 +11,7 @@ import crypto from "crypto"
 import jwt from "jsonwebtoken"
 const userRoute = Router()
 
-import { authenticateToken, AuthRequest } from "../middleware/auth"
+import { authenticateToken } from "../middleware/auth"
 import { validateUsername } from "../../frontend/src/validators/usernameValidator"
 import { validateName } from "../../frontend/src/validators/nameValidator"
 import { validatePassword } from "../../frontend/src/validators/passwordValidator"
@@ -21,9 +21,14 @@ import { validateBiography } from "../../frontend/src/validators/biographyValida
 import { validateLatitude, validateLongitude, validateAllowGps } from "../../frontend/src/validators/coordinatesValidator"
 import { validateBirthdate } from "../../frontend/src/validators/birthdateValidator"
 
+import type { UserProfileType } from "../../interfaces/User.type"
+import type { FieldErrorType } from "../../interfaces/FieldError.type"
+
 import nodemailer from "nodemailer"
 import unauthorized from "../errorHttp/unauthorized"
 import internalServerError from "../errorHttp/internalServerError"
+import { AuthRequestType } from "../../interfaces/AuthRequest.type"
+import { ValidationErrorType } from "../../interfaces/ValidationError.type"
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -96,7 +101,7 @@ userRoute.post("/user/check-email-token", async (req, res) => {
 userRoute.post("/user/register", async (req, res) => {
     try {
         const { email, username, password, first_name, last_name, birthdate } = req.body
-        const validationErrors: { [key: string]: string } = {}
+        const validationErrors: FieldErrorType = {}
         // Validate username
         const usernameError = validateUsername(username)
         if (usernameError) {
@@ -327,7 +332,7 @@ userRoute.post("/user/reset-password", async (req, res) => {
     }
 })
 
-userRoute.post("/user/password", authenticateToken, async (req: AuthRequest, res) => {
+userRoute.post("/user/password", authenticateToken, async (req: AuthRequestType, res) => {
     try {
         const userId = req.user?.id
 
@@ -374,7 +379,7 @@ userRoute.post("/user/logout", async (req, res) => {
 userRoute.get(
     "/user/nearby",
     authenticateToken,
-    async (req: AuthRequest, res) => {
+    async (req: AuthRequestType, res) => {
         try {
             const userId = req.user?.id
 
@@ -554,7 +559,7 @@ userRoute.get(
     }
 )
 
-userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) => {
+userRoute.get("/user/profile", authenticateToken, async (req: AuthRequestType, res) => {
     try {
         const userId = req.user?.id
 
@@ -594,34 +599,35 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
         }
 
         const row = result.rows[0]
-        const user = {
-            id:row.user_id,
+        const user: UserProfileType = {
+            id: row.user_id,
             email: row.email,
             username: row.username,
             first_name: row.first_name,
             last_name: row.last_name,
             age: row.age,
+            is_verified: row.is_verified,
             fame_rating: row.fame_rating,
             created_at: row.user_created_at,
             updated_at: row.user_updated_at,
-        }
-        const profile = {
-            gender: row.gender,
-            sexual_preference: row.sexual_preference,
-            biography: row.biography,
-            location: row.location,
-            latitude: row.latitude,
-            longitude: row.longitude,
-            allow_gps: row.allow_gps,
+            profile: {
+                gender: row.gender,
+                sexual_preference: row.sexual_preference,
+                biography: row.biography,
+                location: row.location,
+                latitude: row.latitude,
+                longitude: row.longitude,
+                allow_gps: row.allow_gps,
+            },
         }
 
-        res.json({ user, profile })
+        res.json(user)
     } catch (err) {
         return internalServerError(res, err, "Error fetching user profile")
     }
 })
 
-userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) => {
+userRoute.put("/user/profile", authenticateToken, async (req: AuthRequestType, res) => {
     try {
         const userId = req.user?.id
 
@@ -636,7 +642,7 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
         }
 
         // Validation des champs user
-        const validationErrors: { field: string; error: string }[] = []
+        const validationErrors: ValidationErrorType[] = []
 
         if (userUpdates) {
             if (userUpdates.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userUpdates.email)) {
@@ -963,27 +969,29 @@ userRoute.put("/user/profile", authenticateToken, async (req: AuthRequest, res) 
             )
 
             const row = result.rows[0]
-            const user = {
+            const user: UserProfileType = {
+                id: row.user_id,
                 email: row.email,
                 username: row.username,
                 first_name: row.first_name,
                 last_name: row.last_name,
+                age: row.age,
                 is_verified: row.is_verified,
                 fame_rating: row.fame_rating,
                 created_at: row.user_created_at,
                 updated_at: row.user_updated_at,
-            }
-            const profile = {
-                gender: row.gender,
-                sexual_preference: row.sexual_preference,
-                biography: row.biography,
-                location: row.location,
-                latitude: row.latitude,
-                longitude: row.longitude,
-                allow_gps: row.allow_gps,
+                profile: {
+                    gender: row.gender,
+                    sexual_preference: row.sexual_preference,
+                    biography: row.biography,
+                    location: row.location,
+                    latitude: row.latitude,
+                    longitude: row.longitude,
+                    allow_gps: row.allow_gps,
+                },
             }
 
-            const responsePayload: Record<string, unknown> = { user, profile }
+            const responsePayload: Record<string, unknown> = { user }
             if (pendingEmailUpdate) {
                 responsePayload.email_verification_sent = verificationEmailSent
                 responsePayload.message = verificationEmailSent
