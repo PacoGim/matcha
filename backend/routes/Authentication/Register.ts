@@ -3,7 +3,7 @@ import { hash } from "bcrypt"
 import crypto from "crypto"
 
 import db from "../../database/db"
-import transporter from "../../mailProvider/NodemailerProvide"
+import transporter from "../../mailProvider/NodemailerProvider"
 import { FieldErrorType } from "../../../interfaces/FieldError.type"
 import { validateUsername } from "../../../frontend/src/validators/usernameValidator"
 import { validateName } from "../../../frontend/src/validators/nameValidator"

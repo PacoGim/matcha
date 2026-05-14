@@ -1,14 +1,14 @@
 import { Router } from "express"
-import db from "../database/db"
-import { authenticateToken } from "../middleware/auth"
-import unauthorized from "../errorHttp/unauthorized"
-import internalServerError from "../errorHttp/internalServerError"
-import type { AuthRequestType } from "../../interfaces/AuthRequest.type"
-import type { UserProfileType } from "../../interfaces/User.type"
+import db from "../../database/db"
+import { authenticateToken } from "../../middleware/auth"
+import unauthorized from "../../errorHttp/unauthorized"
+import internalServerError from "../../errorHttp/internalServerError"
+import type { AuthRequestType } from "../../../interfaces/AuthRequest.type"
+import type { UserProfileType } from "../../../interfaces/User.type"
 
-const profileRoute = Router()
+const suggestionProfilesRoute = Router()
 
-profileRoute.get("/profile/:id", async (req, res) => {
+suggestionProfilesRoute.get("/profile/:id", async (req, res) => {
     try {
         const userId = req.params.id
         const result = await db.getPool().query("SELECT email,username,first_name,last_name,created_at FROM profiles WHERE user_id=$1;", [userId])
@@ -18,7 +18,7 @@ profileRoute.get("/profile/:id", async (req, res) => {
     }
 })
 
-profileRoute.get("/profiles", authenticateToken, async (req: AuthRequestType, res) => {
+suggestionProfilesRoute.get("/profiles", authenticateToken, async (req: AuthRequestType, res) => {
     try {
         const currentUserId = req.user?.id
         if (!currentUserId) {
@@ -73,4 +73,4 @@ profileRoute.get("/profiles", authenticateToken, async (req: AuthRequestType, re
     }
 })
 
-export default profileRoute
+export default suggestionProfilesRoute
