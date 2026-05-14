@@ -19,6 +19,7 @@ export async function fetchSuggestedProfiles(
         }
 
         const profiles: UserProfileType[] = await response.json();
+        console.log('profiles: ', profiles.length);
         return profiles;
     } catch (error) {
         console.error(

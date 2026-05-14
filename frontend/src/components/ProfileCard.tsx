@@ -1,5 +1,7 @@
+// @ts-ignore
 import './ProfileCard.css'
 import type { ProfileCardType } from '../../../interfaces/ProfileCard.type'
+import trimTextFn from '../functions/trimText.fn'
 
 export default function ProfileCard({
     profile,
@@ -7,63 +9,25 @@ export default function ProfileCard({
     onPass,
     onViewProfile
 }: ProfileCardType) {
-    const getGenderIcon = (gender: string) => {
-        switch (gender) {
-            case 'male':
-                return '♂️'
-            case 'female':
-                return '♀️'
-            default:
-                return '⚲'
-        }
-    }
-
-    const getPreferenceText = (pref: string) => {
-        switch (pref) {
-            case 'male':
-                return '♂️'
-            case 'female':
-                return '♀️'
-            case 'both':
-                return '♂️♀️'
-            default:
-                return ''
-        }
-    }
+    const { username, age } = profile
 
     return (
-        <div key={profile.id} className="profile-result-card">
+        <div className="profile-card">
             <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${profile.id}/1`} alt={`Profile image of ${profile.username}`} />
-            <div className="profile-overlay">
-                <button className="like-button" onClick={() => onLike(profile.id)}>
-                    ♥
-                </button>
-            </div>
-            <div className="profile-info">
-                <h3>
-                    {profile.first_name}, {profile.age}
-                </h3>
-                {/* <p className="distance">{profile.distance_km} km away</p> */}
+            <div className='card-body'>
+                <span className='username'>{trimTextFn(username, 10)} ({age})</span>
+                <div className='controls'>
+                    <span className='icon'>
+                        <img src="/img/icons/cross.svg" alt="" />
+                    </span>
+                    <span className='icon'>
+                        <img src="/img/icons/view.svg" alt="" />
+                    </span>
+                    <span className='icon'>
+                        <img src="/img/icons/love.svg" alt="" />
+                    </span>
+                </div>
             </div>
         </div>
-        // <div className="profile-card">
-        //     <img className='profile-photo' src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${id}/1`} alt={`Profile image of ${username}`} />
-
-        //     <h3>
-        //         {username} {getGenderIcon(gender)} ({age})
-        //     </h3>
-
-        //     <p>📍 {location}</p>
-
-        //     <p>Interested in: {getPreferenceText(sexual_preference)}</p>
-
-        //     <p>{biography}</p>
-
-        //     <div className="profile-actions">
-        //         <button onClick={() => onPass?.(id)}>❌</button>
-        //         <button onClick={() => onViewProfile?.(id)}>👁️</button>
-        //         <button onClick={() => onLike?.(id)}>❤️</button>
-        //     </div>
-        // </div>
     )
 }
