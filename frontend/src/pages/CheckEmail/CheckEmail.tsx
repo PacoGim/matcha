@@ -52,7 +52,7 @@ export default function CheckEmail() {
         };
 
         verifyToken();
-    }, [searchParams, navigate]);
+    }, [searchParams, navigate, logout]);
 
     return (
         <div id="check-email-page">

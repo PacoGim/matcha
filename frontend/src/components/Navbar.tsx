@@ -1,5 +1,6 @@
 
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+//@ts-ignore
 import './Navbar.css'
 import { useAuth } from '../contexts/AuthContext'
 import Navitem from './Navitem'
@@ -10,10 +11,6 @@ function Navbar() {
 
     const paths = [
         {
-            to: '/',
-            name: 'Home'
-        },
-        {
             to: '/about',
             name: 'About'
         }
@@ -21,6 +18,10 @@ function Navbar() {
 
     const privatePaths = [
         ...paths,
+        {
+            to: '/',
+            name: 'Home'
+        },
         {
             to: '/search',
             name: 'Search'

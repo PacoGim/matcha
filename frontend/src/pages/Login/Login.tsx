@@ -20,7 +20,7 @@ export default function Login() {
         if (isAuthenticated === true) {
             navigate('/')
         }
-    }, [isAuthenticated])
+    }, [isAuthenticated, navigate])
 
     if (isAuthenticated === true) return null
 

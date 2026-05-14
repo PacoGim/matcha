@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 import type { BaseUserType } from '../../../interfaces/User.type';
 import { AuthContextType, AuthProviderType } from '../../../interfaces/AuthContext.type';
@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderType> = ({ children }) => {
 
     const logout = (message: string = "") => {
         setUser(null);
-        window.location.assign("/")
+        window.location.assign("/about")
     };
 
     const value = {

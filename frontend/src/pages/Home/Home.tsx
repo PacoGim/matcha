@@ -5,14 +5,21 @@ import Navbar from '../../components/Navbar'
 import ProfileCard from '../../components/ProfileCard'
 import { fetchSuggestedProfiles } from '../../services/userService'
 import type { UserProfileType } from '../../../../interfaces/User.type'
+import { useAuth } from '../../contexts/AuthContext'
+import { useNavigate } from 'react-router'
 
 export default function Home() {
   const [suggestedProfiles, setSuggestedProfiles] = useState<UserProfileType[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const hasFetched = useRef(false)
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
+    if (isAuthenticated === false){
+      navigate('/about')
+    }
     if (hasFetched.current) return
     hasFetched.current = true
     loadSuggestedProfiles()

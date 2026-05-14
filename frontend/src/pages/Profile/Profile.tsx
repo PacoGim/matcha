@@ -41,7 +41,7 @@ export default function ProfilePage() {
         if (isAuthenticated === false) {
             navigate('/')
         }
-    }, [isAuthenticated])
+    }, [isAuthenticated, navigate])
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -90,7 +90,7 @@ export default function ProfilePage() {
         }
 
         fetchProfile()
-    }, [isInitializing])
+    }, [isInitializing, logout])
 
     // Reverse geocoding with debounce when coordinates change
     useEffect(() => {
@@ -409,7 +409,7 @@ export default function ProfilePage() {
                                             </div>
                                             <div className="info-field">
                                                 <label>Member since:</label>
-                                                <span>{new Date(userProfile .created_at).toLocaleDateString()}</span>
+                                                <span>{new Date(userProfile.created_at).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>

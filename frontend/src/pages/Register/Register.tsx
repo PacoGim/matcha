@@ -30,7 +30,7 @@ export default function Register() {
         if (isAuthenticated === true) {
             navigate('/')
         }
-    }, [isAuthenticated])
+    }, [isAuthenticated, navigate])
 
     if (isAuthenticated === true) return null
 
