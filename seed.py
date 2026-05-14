@@ -8,6 +8,7 @@ import urllib.request
 from datetime import date, timedelta
 
 import psycopg
+from image_gen import download_images_for_users
 
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = int(os.getenv("DB_PORT", "5432"))
@@ -155,6 +156,7 @@ def generate_users():
 
 
 def insert_users(conn, users):
+    user_ids = []
     with conn.cursor() as cur:
         for user in users:
             cur.execute(
@@ -192,6 +194,7 @@ def insert_users(conn, users):
             )
 
             user_id = cur.fetchone()[0]
+            user_ids.append(user_id)
 
             cur.execute(
                 """
@@ -247,6 +250,7 @@ def insert_users(conn, users):
             )
 
     conn.commit()
+    return user_ids
 
 
 def create_bob(conn):
@@ -390,7 +394,7 @@ def main():
         users = generate_users()
 
         print("[*] Inserting users/profiles...")
-        insert_users(conn, users)
+        user_ids = insert_users(conn, users)
 
         print("[*] Creating Bob...")
         create_bob(conn)
@@ -403,6 +407,9 @@ def main():
 
         print("[*] Generating messages...")
         generate_messages(conn)
+
+        print("[*] Downloading images...")
+        download_images_for_users(user_ids)
 
         print("[✔] Seeding complete.")
 

@@ -11,8 +11,7 @@ SAVE_DIR = "backend/images"
 DELAY = 0.025  # seconds between requests
 
 
-def download_image(index: int) -> str | None:
-    """Download a single image and return its path, or None on failure."""
+def download_image_for_user(user_id: int) -> str | None:
     url = "https://thispersondoesnotexist.com/"
     headers = {
         "User-Agent": "Mozilla/5.0 (compatible; face-downloader/1.0)"
@@ -22,21 +21,36 @@ def download_image(index: int) -> str | None:
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"face_{timestamp}_{index:04d}.jpg"
+        filename = f"{user_id}.jpg"  # 🔥 use DB id
         filepath = os.path.join(SAVE_DIR, filename)
 
         with open(filepath, "wb") as f:
             f.write(response.content)
 
-        size_kb = len(response.content) / 1024
-        print(f"  ✓ Saved: {filename}  ({size_kb:.1f} KB)")
+        print(f"  ✓ Saved: {filename}")
         return filepath
 
     except requests.RequestException as e:
-        print(f"  ✗ Request failed: {e}")
+        print(f"  ✗ Failed for user {user_id}: {e}")
         return None
 
+def download_images_for_users(user_ids: list[int]):
+    os.makedirs(SAVE_DIR, exist_ok=True)
+
+    print(f"\nDownloading {len(user_ids)} images...\n")
+
+    success = 0
+
+    for i, user_id in enumerate(user_ids, 1):
+        print(f"[{i}/{len(user_ids)}] User {user_id}")
+        result = download_image_for_user(user_id)
+
+        if result:
+            success += 1
+
+        time.sleep(DELAY)  # keep your delay
+
+    print(f"\nDone — {success}/{len(user_ids)} images saved.")
 
 def main():
     os.makedirs(SAVE_DIR, exist_ok=True)
