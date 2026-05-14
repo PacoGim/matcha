@@ -6,7 +6,6 @@ import Navitem from './Navitem'
 import handleLogout from '../functions/handleLogout.fn'
 
 function Navbar() {
-    const navigate = useNavigate()
     const { user, isAuthenticated, logout } = useAuth()
 
     const privatePaths = [
@@ -65,12 +64,12 @@ function Navbar() {
                                 </>
                             )
                             :
-                            (
-                                <>
-                                    {publicPaths.map((route, idx) => <Navitem key={idx} to={route.to} name={route.name} />)}
-                                </>
-                            )
+                            (<></>)
                     }
+                    {
+                        publicPaths.map((route, idx) => <Navitem key={idx} to={route.to} name={route.name} />)
+                    }
+
                 </ul>
             </div>
         </nav>
