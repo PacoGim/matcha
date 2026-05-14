@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+//@ts-ignore
 import './Login.css'
 import Navbar from '../../components/Navbar'
 import { useAuth } from '../../contexts/AuthContext'
@@ -9,9 +10,9 @@ export default function Login() {
         email: '',
         password: ''
     })
-    const [message, setMessage] = useState('')
-    const [error, setError] = useState('')
-    const [loading, setLoading] = useState(false)
+    const [message, setMessage] = useState<string>('')
+    const [error, setError] = useState<string>('')
+    const [loading, setLoading] = useState<boolean>(false)
     const navigate = useNavigate()
     const { login, isAuthenticated } = useAuth()
 

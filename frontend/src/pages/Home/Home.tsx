@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+//@ts-ignore
 import './Home.css';
 import Navbar from '../../components/Navbar';
 import ProfileCard from '../../components/ProfileCard';
@@ -7,8 +8,8 @@ import type { UserProfileType } from '../../../../interfaces/User.type';
 
 export default function Home() {
   const [suggestedProfiles, setSuggestedProfiles] = useState<UserProfileType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     loadSuggestedProfiles();

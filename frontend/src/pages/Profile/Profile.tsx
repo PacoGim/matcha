@@ -11,11 +11,11 @@ import { FieldErrorType } from '../../../../interfaces/FieldError.type'
 
 export default function ProfilePage() {
     const [userProfile, setUserProfile] = useState<UserProfileType | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-    const [successMessage, setSuccessMessage] = useState('')
-    const [isEditing, setIsEditing] = useState(false)
-    const [isSaving, setIsSaving] = useState(false)
+    const [loading, setLoading] = useState<boolean>(true)
+    const [error, setError] = useState<string>('')
+    const [successMessage, setSuccessMessage] = useState<string>('')
+    const [isEditing, setIsEditing] = useState<boolean>(false)
+    const [isSaving, setIsSaving] = useState<boolean>(false)
     const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'prompt' | null>(null)
     const [fieldErrors, setFieldErrors] = useState<FieldErrorType>({})
     const { logout } = useAuth()
@@ -61,7 +61,7 @@ export default function ProfilePage() {
 
                 const data: UserProfileType = await response.json()
 
-                if (response.status === 401) {
+                if ([401,403].includes(response.status)) {
                     return logout()
                 }
 

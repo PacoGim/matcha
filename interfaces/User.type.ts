@@ -19,3 +19,8 @@ export interface UserType extends BaseUserType {
 export interface UserProfileType extends UserType {
     profile: ProfileType
 }
+
+interface PublicUserType {
+    id: string;
+    username: string;
+}

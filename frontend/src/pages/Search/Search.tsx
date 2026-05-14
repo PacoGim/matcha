@@ -20,14 +20,14 @@ export default function Search() {
   });
 
   const [results, setResults] = useState<UserProfileType[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [totalResults, setTotalResults] = useState(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [totalResults, setTotalResults] = useState<number>(0);
 
   const handleSearch = async () => {
     setLoading(true);
     try {
-      const users = await fetchNearbyUsers(filters);
-      setResults(users as UserProfileType[]);
+      const users : UserProfileType[] = await fetchNearbyUsers(filters);
+      setResults(users);
       setTotalResults(users.length);
     } catch (error) {
       console.error('Error searching nearby users:', error);

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+//@ts-ignore
 import './CheckEmail.css';
 import Navbar from '../../components/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function CheckEmail() {
-    const [message, setMessage] = useState('Verifying your email...');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState<string>('Verifying your email...');
+    const [error, setError] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(true);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { logout } = useAuth()

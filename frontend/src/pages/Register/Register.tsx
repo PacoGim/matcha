@@ -19,10 +19,10 @@ export default function Register() {
         last_name: '',
         birthdate: ''
     })
-    const [message, setMessage] = useState('')
-    const [error, setError] = useState('')
+    const [message, setMessage] = useState<string>('')
+    const [error, setError] = useState<string>('')
     const [fieldErrors, setFieldErrors] = useState<FieldErrorType>({})
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState<boolean>(false)
     const { isAuthenticated } = useAuth()
     const navigate = useNavigate()
 

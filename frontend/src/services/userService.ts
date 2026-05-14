@@ -1,12 +1,5 @@
 import type { UserProfileType } from '../../../interfaces/User.type';
 
-const PARIS_LAT = 48.8566;
-const PARIS_LON = 2.3522;
-
-/* -----------------------------
-   Main API
------------------------------- */
-
 export async function fetchSuggestedProfiles(
     count: number = 20
 ): Promise<UserProfileType[]> {
@@ -36,67 +29,6 @@ export async function fetchSuggestedProfiles(
         return [];
     }
 }
-
-/* -----------------------------
-   Current user
------------------------------- */
-
-export function getCurrentUser(): UserProfileType {
-    return {
-        id: 'current-user',
-
-        email: 'user@example.com',
-
-        username: 'currentuser',
-
-        first_name: 'Alex',
-
-        age: 30,
-
-        last_name: 'Johnson',
-
-        is_verified: true,
-
-        fame_rating: 75,
-
-        created_at: new Date(
-            Date.now() - 30 * 24 * 60 * 60 * 1000
-        ).toISOString(),
-
-        updated_at: new Date().toISOString(),
-
-        profile: {
-            user_id: 'current-user',
-
-            gender: 'male',
-
-            age: 30,
-
-            sexual_preference: 'female',
-
-            biography:
-                "Hey! I'm Alex, a software developer who loves hiking and trying new restaurants. Looking for someone to share adventures with!",
-
-            location: 'Paris, France',
-
-            latitude: PARIS_LAT,
-
-            longitude: PARIS_LON,
-
-            allow_gps: true,
-
-            created_at: new Date(
-                Date.now() - 30 * 24 * 60 * 60 * 1000
-            ).toISOString(),
-
-            updated_at: new Date().toISOString()
-        }
-    };
-}
-
-/* -----------------------------
-   Search/Nearby Users
------------------------------- */
 
 export async function fetchNearbyUsers(
     filters?: {

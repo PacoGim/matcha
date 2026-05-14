@@ -15,7 +15,7 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<AuthProviderType> = ({ children }) => {
     const [user, setUser] = useState<BaseUserType | null>(null);
-    const [isInitializing, setIsInitializing] = useState(true);
+    const [isInitializing, setIsInitializing] = useState<boolean>(true);
 
     useEffect(() => {
         const loadUser = async () => {
