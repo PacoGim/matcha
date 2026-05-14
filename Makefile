@@ -17,7 +17,7 @@ down:
 
 reset:
 	podman-compose down -v
-	podman unshare rm -rf data/postgres
+	-podman unshare rm -rf data/postgres
 	rm -rf data
 	rm -rf venv
 
