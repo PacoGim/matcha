@@ -595,6 +595,7 @@ userRoute.get("/user/profile", authenticateToken, async (req: AuthRequest, res) 
 
         const row = result.rows[0]
         const user = {
+            id:row.user_id,
             email: row.email,
             username: row.username,
             first_name: row.first_name,

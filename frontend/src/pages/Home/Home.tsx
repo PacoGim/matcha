@@ -59,7 +59,6 @@ export default function Home() {
               onLike={handleLike}
               onPass={handlePass}
               onViewProfile={handleViewProfile}
-              gridView={true}
             />
           ))}
         </div>

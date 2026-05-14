@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { validateName } from '../../validators/nameValidator'
 
 interface User {
+    id: string
     email: string
     username: string
     first_name: string
@@ -405,7 +406,6 @@ export default function ProfilePage() {
             <Navbar />
             <div className="profile-container">
                 <h1>My Profile</h1>
-
                 {error && <div className="error-message">{error}</div>}
                 {successMessage && <div className="success-message">{successMessage}</div>}
 
@@ -413,6 +413,7 @@ export default function ProfilePage() {
                     <div className="profile-content">
                         {!isEditing ? (
                             <>
+                                <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${user.id}/1`} alt="Profile" />
                                 <div className="two-pane-grid">
                                     {/* User Data Pane */}
                                     <div className="pane user-pane">

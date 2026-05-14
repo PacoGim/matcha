@@ -44,7 +44,8 @@ app.use("/", profileRoute)
 
 app.get('/images/:id/:idx', authenticateToken, (req, res) => {
     const { id, idx } = req.params
-    const imagePath = path.join(__dirname, `./images/${id}/${idx}.png`)
+    // const imagePath = path.join(__dirname, `./images/${id}/${idx}.png`)
+    const imagePath = path.join(__dirname, `./images/${id}.jpg`)
     if (fs.existsSync(imagePath)) {
         res.sendFile(imagePath)
     } else {
