@@ -32,11 +32,18 @@ div.profile-card {
         height: 40px;
         background-color: #fff;
         border-radius: 50%;
+        cursor: pointer;
+        transition: transform 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+        &:hover {
+          transform: scale(1.25);
+        }
 
         img {
           width: inherit;
           height: inherit;
         }
+
       }
     }
   }

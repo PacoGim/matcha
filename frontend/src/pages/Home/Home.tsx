@@ -25,15 +25,15 @@ export default function Home() {
     setLoading(false)
   }
 
-  const handleLike = (userId: string) => {
-    setSuggestedProfiles(prev => prev.filter(p => p.id !== userId))
+  function handleLike(userId: string) {
+    console.log('Liking userId: ', userId)
   }
 
-  const handlePass = (userId: string) => {
-    setSuggestedProfiles(prev => prev.filter(p => p.id !== userId))
+  function handlePass(userId: string) {
+    console.log('Passing userId: ', userId)
   }
 
-  const handleViewProfile = (userId: string) => {
+  function handleViewProfile(userId: string) {
     console.log('Viewing:', userId)
   }
 

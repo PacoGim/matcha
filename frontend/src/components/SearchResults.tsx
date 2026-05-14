@@ -1,20 +1,19 @@
 // @ts-ignore
-import './SearchResults.css';
-import ProfileCard from './ProfileCard';
-import type { SearchResultsType } from '../../../interfaces/SearchResults.type';
+import './SearchResults.css'
+import ProfileCard from './ProfileCard'
+import type { SearchResultsType } from '../../../interfaces/SearchResults.type'
 
 export default function SearchResults({
   results,
   loading,
-  totalResults,
-  onLike,
+  totalResults
 }: SearchResultsType) {
   if (loading) {
     return (
       <div className="search-results">
         <p className="loading">Loading results...</p>
       </div>
-    );
+    )
   }
 
   if (totalResults === 0) {
@@ -22,7 +21,19 @@ export default function SearchResults({
       <div className="search-results">
         <p className="no-results">No matches found. Try adjusting your filters.</p>
       </div>
-    );
+    )
+  }
+
+  function handleLike(userId: string) {
+    console.log('Liking userId: ', userId)
+  }
+
+  function handlePass(userId: string) {
+    console.log('Passing userId: ', userId)
+  }
+
+  function handleViewProfile(userId: string) {
+    console.log('Viewing:', userId)
   }
 
   return (
@@ -37,7 +48,9 @@ export default function SearchResults({
           <ProfileCard
             key={profile.id}
             profile={profile}
-            onLike={onLike}
+            onLike={handleLike}
+            onPass={handlePass}
+            onViewProfile={handleViewProfile}
           />
           // <div key={profile.id} className="profile-result-card">
           //   <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${profile.id}/1`} alt={`Profile image of ${profile.username}`} />
@@ -56,5 +69,5 @@ export default function SearchResults({
         ))}
       </div>
     </div>
-  );
+  )
 }

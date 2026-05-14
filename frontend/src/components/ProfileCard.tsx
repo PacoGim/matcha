@@ -9,7 +9,7 @@ export default function ProfileCard({
     onPass,
     onViewProfile
 }: ProfileCardType) {
-    const { username, age } = profile
+    const { id, username, age } = profile
 
     return (
         <div className="profile-card">
@@ -17,13 +17,13 @@ export default function ProfileCard({
             <div className='card-body'>
                 <span className='username'>{trimTextFn(username, 10)} ({age})</span>
                 <div className='controls'>
-                    <span className='icon'>
+                    <span className='icon' onClick={() => onPass(id)}>
                         <img src="/img/icons/cross.svg" alt="" />
                     </span>
-                    <span className='icon'>
+                    <span className='icon' onClick={() => onViewProfile(id)}>
                         <img src="/img/icons/view.svg" alt="" />
                     </span>
-                    <span className='icon'>
+                    <span className='icon' onClick={() => onLike(id)}>
                         <img src="/img/icons/love.svg" alt="" />
                     </span>
                 </div>
