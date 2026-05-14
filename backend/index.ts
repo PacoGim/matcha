@@ -12,6 +12,8 @@ import profileRoute from "./routes/Profile"
 import dotenv from "dotenv"
 import path from "path"
 import { authenticateToken } from "./middleware/auth"
+import loginRoute from "./routes/Authentication/Login"
+import registerRoute from "./routes/Authentication/Register"
 const __dirname = path.resolve()
 dotenv.config({
     path: path.resolve(__dirname, "../.env")
@@ -39,7 +41,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
-app.use("/", userRoute)
+app.use("/", userRoute, loginRoute, registerRoute)
 app.use("/", profileRoute)
 
 app.get('/images/:id/:idx', authenticateToken, (req, res) => {

@@ -12,6 +12,9 @@ up: $(DATA)
 	python3 -m venv venv
 	source venv/bin/activate && pip install -r requirements.txt
 
+db:
+	podman exec -it matcha-db psql -U matcha_user -d matcha_db
+
 down:
 	podman-compose down
 
