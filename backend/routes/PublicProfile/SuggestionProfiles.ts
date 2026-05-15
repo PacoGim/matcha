@@ -5,10 +5,12 @@ import unauthorized from "../../errorHttp/unauthorized"
 import internalServerError from "../../errorHttp/internalServerError"
 import type { AuthRequestType } from "../../../interfaces/AuthRequest.type"
 import type { UserProfileType } from "../../../interfaces/User.type"
+import {api} from "../../../frontend/src/api/routes"
 
 const suggestionProfilesRoute = Router()
+const suggestionProfilesApi = api.app.suggestion
 
-suggestionProfilesRoute.get("/profile/:id", async (req, res) => {
+suggestionProfilesRoute[api.app.profile.method](api.app.profile.path, async (req, res) => {
     try {
         const userId = req.params.id
         const result = await db.getPool().query("SELECT email,username,first_name,last_name,created_at FROM profiles WHERE user_id=$1;", [userId])
@@ -18,7 +20,7 @@ suggestionProfilesRoute.get("/profile/:id", async (req, res) => {
     }
 })
 
-suggestionProfilesRoute.get("/profiles", authenticateToken, async (req: AuthRequestType, res) => {
+suggestionProfilesRoute[suggestionProfilesApi.method](suggestionProfilesApi.path, authenticateToken, async (req: AuthRequestType, res) => {
     try {
         const currentUserId = req.user?.id
         if (!currentUserId) {

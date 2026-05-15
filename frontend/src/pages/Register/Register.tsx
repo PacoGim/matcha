@@ -9,6 +9,7 @@ import { validateBirthdate, getValidationRulesDescription as getBirthValidationR
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { FieldErrorType } from '../../../../interfaces/FieldError.type'
+import { api, apiFetch } from "../../api/routes"
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -98,14 +99,7 @@ export default function Register() {
         }
 
         try {
-            const endpoint_register = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/register`
-            const response = await fetch(endpoint_register, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
+            const response = await apiFetch(api.auth.register, { body: JSON.stringify(formData) })
 
             const data = await response.json()
 

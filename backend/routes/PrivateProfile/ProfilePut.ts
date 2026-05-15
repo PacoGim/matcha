@@ -14,10 +14,12 @@ import db from "../../database/db"
 import transporter from "../../mailProvider/NodemailerProvider"
 import { UserProfileType } from "../../../interfaces/User.type"
 import internalServerError from "../../errorHttp/internalServerError"
+import {api} from "../../../frontend/src/api/routes"
 
 const profilePutRoute = Router()
+const profilePutApi = api.user.updateProfile
 
-profilePutRoute.put("/user/profile", authenticateToken, async (req: AuthRequestType, res) => {
+profilePutRoute[profilePutApi.method](profilePutApi.path, authenticateToken, async (req: AuthRequestType, res) => {
     try {
         const userId = req.user?.id
         if (!userId) {

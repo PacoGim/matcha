@@ -4,10 +4,12 @@ import crypto from "crypto"
 
 import internalServerError from "../../errorHttp/internalServerError"
 import transporter from "../../mailProvider/NodemailerProvider"
+import {api} from "../../../frontend/src/api/routes"
 
 const forgotPasswordRoute = Router()
+const forgotPasswordApi = api.user.forgotPassword
 
-forgotPasswordRoute.post("/user/forgot-password", async (req, res) => {
+forgotPasswordRoute[forgotPasswordApi.method](forgotPasswordApi.path, async (req, res) => {
     try {
         const { email } = req.body
 

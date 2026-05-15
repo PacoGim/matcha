@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import './ResetPassword.css';
 import Navbar from '../../components/Navbar';
 import { validatePassword } from '../../validators/passwordValidator';
+import { api, apiFetch } from '../../api/routes';
 
 export default function ResetPassword() {
     const [newPassword, setNewPassword] = useState<string>('');
@@ -35,17 +36,12 @@ export default function ResetPassword() {
         }
 
         try {
-            let endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/password`;
+            let endpoint = api.user.forgotPassword //`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/password`;
 
             if (token) {
-                endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/reset-password`;
+                endpoint = api.user.resetPassword // `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/reset-password`;
             }
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            const response = await apiFetch(endpoint, {
                 body: JSON.stringify({
                     token,
                     new_password: newPassword,

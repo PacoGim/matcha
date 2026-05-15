@@ -5,10 +5,12 @@ import { validatePassword } from "../../../frontend/src/validators/passwordValid
 import unauthorized from "../../errorHttp/unauthorized"
 import db from "../../database/db"
 import internalServerError from "../../errorHttp/internalServerError"
+import {api} from "../../../frontend/src/api/routes"
 
 const resetPasswordRoute = Router()
+const resetPasswordApi = api.user.resetPassword
 
-resetPasswordRoute.post("/user/reset-password", async (req, res) => {
+resetPasswordRoute[resetPasswordApi.method](resetPasswordApi.path, async (req, res) => {
     try {
         const { token, new_password } = req.body
         if (!token || !new_password) {

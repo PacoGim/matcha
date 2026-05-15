@@ -2,10 +2,12 @@ import e, { Router } from "express"
 import db from "../../database/db"
 import unauthorized from "../../errorHttp/unauthorized"
 import internalServerError from "../../errorHttp/internalServerError"
+import {api} from "../../../frontend/src/api/routes"
 
 const checkMailTokenRoute = Router()
+const checkMailApi = api.auth.checkMail
 
-checkMailTokenRoute.post("/user/check-email-token", async (req, res) => {
+checkMailTokenRoute[checkMailApi.method](checkMailApi.path, async (req, res) => {
     try {
         const { token } = req.body
         if (!token) {

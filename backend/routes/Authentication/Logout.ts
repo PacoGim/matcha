@@ -1,9 +1,11 @@
 import { Router } from "express"
 import internalServerError from "../../errorHttp/internalServerError"
+import {api} from "../../../frontend/src/api/routes"
 
-const logoutRoute = Router()
+const logoutRouter = Router()
+const logoutApi = api.auth.logout
 
-logoutRoute.post("/user/logout", async (req, res) => {
+logoutRouter[logoutApi.method](logoutApi.path, async (_req, res) => {
     try {
         res.clearCookie('token', {
             httpOnly: true,
@@ -16,4 +18,4 @@ logoutRoute.post("/user/logout", async (req, res) => {
     }
 })
 
-export default logoutRoute
+export default logoutRouter

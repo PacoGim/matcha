@@ -5,7 +5,6 @@ const publicProfileRoute = Router()
 import suggestionProfilesRoute from "./SuggestionProfiles"
 import searchProfilesRoute from "./SearchProfiles"
 
-publicProfileRoute.use(suggestionProfilesRoute)
-publicProfileRoute.use(searchProfilesRoute)
+publicProfileRoute.use("/", suggestionProfilesRoute, searchProfilesRoute)
 
 export default publicProfileRoute

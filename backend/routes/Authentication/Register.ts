@@ -10,10 +10,12 @@ import { validateName } from "../../../frontend/src/validators/nameValidator"
 import { validatePassword } from "../../../frontend/src/validators/passwordValidator"
 import { validateBirthdate } from "../../../frontend/src/validators/birthdateValidator"
 import internalServerError from "../../errorHttp/internalServerError"
+import {api} from "../../../frontend/src/api/routes"
 
 const registerRoute = Router()
+const registerApi = api.auth.register
 
-registerRoute.post("/user/register", async (req, res) => {
+registerRoute[registerApi.method](registerApi.path, async (req, res) => {
     try {
         const { email, username, password, first_name, last_name, birthdate } = req.body
         const validationErrors: FieldErrorType = {}

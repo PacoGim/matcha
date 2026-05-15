@@ -5,7 +5,6 @@ import profilePutRoute from "./ProfilePut"
 
 const privateProfileRoute = Router()
 
-privateProfileRoute.use(profileGetRoute)
-privateProfileRoute.use(profilePutRoute)
+privateProfileRoute.use("/", profileGetRoute, profilePutRoute)
 
 export default privateProfileRoute

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 import type { BaseUserType } from '../../../interfaces/User.type';
 import { AuthContextType, AuthProviderType } from '../../../interfaces/AuthContext.type';
+import {api, apiFetch} from "../api/routes"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -20,18 +21,11 @@ export const AuthProvider: React.FC<AuthProviderType> = ({ children }) => {
     useEffect(() => {
         const loadUser = async () => {
             try {
-                const endpoint_profile = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/profile`
-                const response = await fetch(endpoint_profile, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
+                const response = await apiFetch(api.user.profile);
 
                 if (response.ok) {
                     const data = await response.json();
-                    setUser(data.user);
+                    setUser(data);
                 }
             } catch (err) {
                 console.error('Auth initialization error:', err);

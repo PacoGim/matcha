@@ -5,12 +5,14 @@ import { compare } from "bcrypt"
 import unauthorized from "../../errorHttp/unauthorized"
 import internalServerError from "../../errorHttp/internalServerError"
 import db from "../../database/db"
+import {api} from "../../../frontend/src/api/routes"
 
 const loginRoute = Router()
+const loginApi = api.auth.login
 
 const maxAge = 24 * 60 * 60 * 1000
 
-loginRoute.post("/user/login", async (req, res) => {
+loginRoute[loginApi.method](loginApi.path, async (req, res) => {
     try {
         const { email, password } = req.body
         const result = await db.getPool().query("SELECT id, email, username, password_hash, is_verified FROM users WHERE email=$1;", [email])

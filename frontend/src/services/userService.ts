@@ -1,18 +1,11 @@
 import type { UserProfileType } from '../../../interfaces/User.type';
+import { api, apiFetch } from '../api/routes';
 
 export async function fetchSuggestedProfiles(
     count: number = 20
 ): Promise<UserProfileType[]> {
     try {
-        const endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/profiles?count=${count}`
-
-        const response = await fetch(endpoint, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await apiFetch(api.app.suggestion);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch profiles: ${response.status}`)
@@ -54,15 +47,7 @@ export async function fetchNearbyUsers(
             queryParams.append('interests', filters.interests.join(','));
         }
 
-        const endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/nearby?${queryParams.toString()}`;
-
-        const response = await fetch(endpoint, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await apiFetch(api.app.search);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch nearby users: ${response.status}`);
