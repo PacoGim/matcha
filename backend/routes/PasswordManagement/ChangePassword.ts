@@ -2,7 +2,7 @@ import { Router } from "express"
 import { hash } from "bcrypt"
 
 import db from "../../database/db"
-import { AuthRequestType } from "../../../interfaces/AuthRequest.type"
+import { type AuthRequestType } from "../../../interfaces/AuthRequest.type"
 import { authenticateToken } from "../../middleware/auth"
 import unauthorized from "../../errorHttp/unauthorized"
 import { validatePassword } from "../../../frontend/src/validators/passwordValidator"

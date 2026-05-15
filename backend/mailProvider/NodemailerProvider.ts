@@ -1,11 +1,18 @@
 import nodemailer from "nodemailer"
 
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.GMAIL_MAIL,
-        pass: process.env.GMAIL_APP_PWD
-    }
-})
+let transporter : any
 
-export default transporter
+function getNodemailer() {
+    if (transporter == null) {
+        transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.GMAIL_MAIL,
+                pass: process.env.GMAIL_APP_PWD
+            }
+        })
+    }
+    return transporter
+}
+
+export default getNodemailer

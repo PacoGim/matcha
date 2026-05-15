@@ -1,7 +1,7 @@
 import { Router } from "express"
 import changePasswordRoute from "./ChangePassword"
-import resetPasswordRoute from "./ResetPassword"
 import forgotPasswordRoute from "./ForgotPassword"
+import resetPasswordRoute from "./ResetPassword"
 
 const passwordManagementRoute = Router()
 

@@ -1,9 +1,10 @@
 import { Router } from "express"
-import db from "../../database/db"
-import crypto from "crypto"
+import { compare, hash } from "bcrypt"
 
+import { validatePassword } from "../../../frontend/src/validators/passwordValidator"
+import unauthorized from "../../errorHttp/unauthorized"
+import db from "../../database/db"
 import internalServerError from "../../errorHttp/internalServerError"
-import transporter from "../../mailProvider/NodemailerProvider"
 import {api} from "../../../frontend/src/api/routes"
 
 const forgotPasswordRoute = Router()
@@ -11,43 +12,42 @@ const forgotPasswordApi = api.user.forgotPassword
 
 forgotPasswordRoute[forgotPasswordApi.method](forgotPasswordApi.path, async (req, res) => {
     try {
-        const { email } = req.body
-
-        console.log("Forgot password request for email:", email)
-
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            return res.status(400).json({ error: "Valid email is required" })
+        const { token, new_password } = req.body
+        if (!token || !new_password) {
+            return res.status(400).json({ error: "Token and new_password are required" })
         }
-        console.log(-1)
-        const result = await db.getPool().query("SELECT id FROM users WHERE email = $1;", [email])
-        console.log(0)
-        console.log("Database query result for forgot password:", result.rows)
-        if (result.rows.length) {
-            const userId = result.rows[0].id
-            const resetToken = crypto.randomBytes(32).toString('hex')
-            const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
-
-            console.log(1)
-            await db.getPool().query("DELETE FROM password_resets WHERE user_id = $1;", [userId])
-            console.log(2)
-            await db.getPool().query(
-                "INSERT INTO password_resets (user_id, token, expires_at) VALUES ($1, $2, $3);",
-                [userId, resetToken, expiresAt]
-            )
-            console.log(3)
-            const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`
-            const response = await transporter.sendMail({
-                from: process.env.GMAIL_MAIL,
-                to: email,
-                subject: 'Reset your Matcha password',
-                html: `<p>You requested a password reset for Matcha.</p><p>Please click the link below to reset your password:</p><a target="_blank" href="${resetLink}">Reset Password</a><p>This link will expire in 1 hour.</p>`
-            })
-            console.log("Password reset email sent:", response)
+        const passwordError = validatePassword(new_password)
+        if (passwordError) {
+            return res.status(400).json({ error: passwordError.message, field: passwordError.field })
         }
-
-        res.json({ message: "If an account with that email exists, a password reset link has been sent." })
+        const result = await db.getPool().query(
+            "SELECT user_id, expires_at FROM password_resets WHERE token = $1;",
+            [token]
+        )
+        if (!result.rows.length) {
+            return unauthorized(res, "Invalid or expired token")
+        }
+        const { user_id, expires_at } = result.rows[0]
+        if (new Date() > new Date(expires_at)) {
+            return unauthorized(res, "Invalid or expired token")
+        }
+        const userResult = await db.getPool().query("SELECT password_hash FROM users WHERE id = $1;", [user_id])
+        if (!userResult.rows.length) {
+            return res.status(404).json({ error: "User not found" })
+        }
+        const isSamePassword = await compare(new_password, userResult.rows[0].password_hash)
+        if (isSamePassword) {
+            return res.status(400).json({ error: "New password cannot be the same as the current password" })
+        }
+        const hashedPassword = await hash(new_password, 10)
+        await db.getPool().query(
+            "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2;",
+            [hashedPassword, user_id]
+        )
+        await db.getPool().query("DELETE FROM password_resets WHERE token = $1;", [token])
+        res.json({ message: "Password has been reset successfully" })
     } catch (err) {
-        return internalServerError(res, err, "Error sending password reset email")
+        return internalServerError(res, err, "Error resetting password")
     }
 })
 

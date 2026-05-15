@@ -1,9 +1,10 @@
 import { Router } from "express"
+// @ts-ignore
 import { hash } from "bcrypt"
 import crypto from "crypto"
 
 import db from "../../database/db"
-import transporter from "../../mailProvider/NodemailerProvider"
+import getNodeMailer from "../../mailProvider/NodemailerProvider"
 import type { FieldErrorType } from "../../../interfaces/FieldError.type"
 import { validateUsername } from "../../../frontend/src/validators/usernameValidator"
 import { validateName } from "../../../frontend/src/validators/nameValidator"
@@ -47,7 +48,7 @@ registerRoute[registerApi.method](registerApi.path, async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString('hex')
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
         const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`
-        transporter.sendMail({
+        getNodeMailer().sendMail({
             from: process.env.GMAIL_MAIL,
             to: email,
             subject: 'Verify your email',

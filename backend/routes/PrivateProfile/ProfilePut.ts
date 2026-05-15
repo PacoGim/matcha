@@ -1,18 +1,18 @@
 import { Router } from "express"
 import crypto from "crypto"
 
-import { AuthRequestType } from "../../../interfaces/AuthRequest.type"
+import { type AuthRequestType } from "../../../interfaces/AuthRequest.type"
 import { authenticateToken } from "../../middleware/auth"
 import unauthorized from "../../errorHttp/unauthorized"
-import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
+import {type ValidationErrorType } from "../../../interfaces/ValidationError.type"
 import { validateName } from "../../../frontend/src/validators/nameValidator"
 import { validateGender } from "../../../frontend/src/validators/genderValidator"
 import { validateSexualPreference } from "../../../frontend/src/validators/sexualPreferenceValidator"
 import { validateAllowGps, validateLatitude, validateLongitude } from "../../../frontend/src/validators/coordinatesValidator"
 import { validateBiography } from "../../../frontend/src/validators/biographyValidator"
 import db from "../../database/db"
-import transporter from "../../mailProvider/NodemailerProvider"
-import { UserProfileType } from "../../../interfaces/User.type"
+import getNodeMailer from "../../mailProvider/NodemailerProvider"
+import {type UserProfileType } from "../../../interfaces/User.type"
 import internalServerError from "../../errorHttp/internalServerError"
 import {api} from "../../../frontend/src/api/routes"
 
@@ -276,7 +276,7 @@ profilePutRoute[profilePutApi.method](profilePutApi.path, authenticateToken, asy
             if (pendingEmailVerification) {
                 try {
                     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${pendingEmailVerification.token}`
-                    await transporter.sendMail({
+                    await getNodeMailer().sendMail({
                         from: process.env.GMAIL_MAIL,
                         to: pendingEmailVerification.email,
                         subject: 'Verify your new email',
