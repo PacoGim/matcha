@@ -1,18 +1,18 @@
-import { Router } from "express"
+import { Router, Request } from "express"
 import jwt from "jsonwebtoken"
 import { compare } from "bcrypt"
 
 import unauthorized from "../../errorHttp/unauthorized"
 import internalServerError from "../../errorHttp/internalServerError"
 import db from "../../database/db"
-import {api} from "../../../frontend/src/api/routes"
+import { api } from "../../../frontend/src/api/routes"
 
-const loginRoute = Router()
+const loginRouter = Router()
 const loginApi = api.auth.login
 
 const maxAge = 24 * 60 * 60 * 1000
 
-loginRoute[loginApi.method](loginApi.path, async (req, res) => {
+loginRouter[loginApi.method](loginApi.path, async (req, res) => {
     try {
         const { email, password } = req.body
         const result = await db.getPool().query("SELECT id, email, username, password_hash, is_verified FROM users WHERE email=$1;", [email])
@@ -55,4 +55,4 @@ loginRoute[loginApi.method](loginApi.path, async (req, res) => {
     }
 })
 
-export default loginRoute
+export default loginRouter

@@ -40,7 +40,7 @@ export default function Login() {
         setLoading(true)
 
         try {
-            const response = await apiFetch(api.auth.login, { body: JSON.stringify(formData) })
+            const response = await api.auth.login.fn(formData)
             if (!response.ok) {
                 throw new Error('Login failed')
             }
