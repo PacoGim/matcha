@@ -23,7 +23,7 @@ export default function Home() {
     if (hasFetched.current) return
     hasFetched.current = true
     loadSuggestedProfiles()
-  }, [])
+  }, [isAuthenticated, navigate])
 
   const loadSuggestedProfiles = async () => {
     setLoading(true)

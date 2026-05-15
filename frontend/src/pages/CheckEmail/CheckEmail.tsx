@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import './CheckEmail.css';
 import Navbar from '../../components/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
+import { api, apiFetch } from '../../api/routes';
 
 export default function CheckEmail() {
     const [message, setMessage] = useState<string>('Verifying your email...');
@@ -24,16 +25,7 @@ export default function CheckEmail() {
             }
 
             try {
-                const endpoint_check_email = `/api/user/check-email-token`
-                const response = await fetch(endpoint_check_email, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ token }),
-                });
-
-                // const data = await response.json();
+                const response = await apiFetch(api.auth.checkMail, { body: JSON.stringify({ token }) });
                 if (response.ok === false) {
                     return logout("Token verification failed");
                 }
@@ -52,7 +44,7 @@ export default function CheckEmail() {
         };
 
         verifyToken();
-    }, [searchParams, navigate, logout]);
+    }, [searchParams, navigate]);
 
     return (
         <div id="check-email-page">

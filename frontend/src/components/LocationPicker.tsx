@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+// @ts-ignore
 import 'leaflet/dist/leaflet.css';
 import type { LocationPickerType } from '../../../interfaces/LocationPicker.type';
 

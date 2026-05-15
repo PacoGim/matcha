@@ -8,9 +8,8 @@ import { validatePassword, getValidationRulesDescription as getPasswordValidatio
 import { validateBirthdate, getValidationRulesDescription as getBirthValidationRulesDescription } from '../../validators/birthdateValidator'
 import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-
-//*********************** Types ********************\\
 import type { FieldErrorType } from '../../../../interfaces/FieldError.type'
+import { api, apiFetch } from "../../api/routes"
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -100,14 +99,7 @@ export default function Register() {
         }
 
         try {
-            const endpoint_register = `/api/user/register`
-            const response = await fetch(endpoint_register, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            })
+            const response = await apiFetch(api.auth.register, { body: JSON.stringify(formData) })
 
             const data = await response.json()
 

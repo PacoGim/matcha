@@ -2,20 +2,23 @@ import { Router } from "express"
 import db from "../../database/db"
 import dotenv from "dotenv"
 import path from "path"
+import {api} from "../../../frontend/src/api/routes"
+
 const __dirname = path.resolve()
 dotenv.config({
     path: path.resolve(__dirname, "../.env")
 })
 
 const searchProfilesRoute = Router()
+const searchProfilesApi = api.app.search
 
 import { authenticateToken } from "../../middleware/auth"
 import unauthorized from "../../errorHttp/unauthorized"
 import internalServerError from "../../errorHttp/internalServerError"
 import { AuthRequestType } from "../../../interfaces/AuthRequest.type"
 
-searchProfilesRoute.get(
-    "/user/nearby",
+searchProfilesRoute[searchProfilesApi.method](
+    searchProfilesApi.path,
     authenticateToken,
     async (req: AuthRequestType, res) => {
         try {

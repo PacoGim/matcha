@@ -7,10 +7,12 @@ import { authenticateToken } from "../../middleware/auth"
 import unauthorized from "../../errorHttp/unauthorized"
 import { validatePassword } from "../../../frontend/src/validators/passwordValidator"
 import internalServerError from "../../errorHttp/internalServerError"
+import {api} from "../../../frontend/src/api/routes"
 
 const changePasswordRoute = Router()
+const changePasswordApi = api.user.changePassword
 
-changePasswordRoute.post("/user/password", authenticateToken, async (req: AuthRequestType, res) => {
+changePasswordRoute[changePasswordApi.method](changePasswordApi.path, authenticateToken, async (req: AuthRequestType, res) => {
     try {
         const userId = req.user?.id
         if (!userId) {

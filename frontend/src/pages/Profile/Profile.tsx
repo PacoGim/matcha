@@ -6,10 +6,9 @@ import Navbar from '../../components/Navbar'
 import LocationPicker from '../../components/LocationPicker'
 import { useAuth } from '../../contexts/AuthContext'
 import { validateName } from '../../validators/nameValidator'
-
-//*********************** Types ********************\\
 import type { UserProfileType } from '../../../../interfaces/User.type'
 import type { FieldErrorType } from '../../../../interfaces/FieldError.type'
+import { api, apiFetch } from '../../api/routes'
 
 export default function ProfilePage() {
     const [userProfile, setUserProfile] = useState<UserProfileType | null>(null)
@@ -52,18 +51,11 @@ export default function ProfilePage() {
             }
 
             try {
-                const endpoint_profile = `/api/user/profile`
-                const response = await fetch(endpoint_profile, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
+                const response = await apiFetch(api.user.profile)
 
                 const data: UserProfileType = await response.json()
 
-                if ([401,403].includes(response.status)) {
+                if ([401, 403].includes(response.status)) {
                     return logout()
                 }
 
@@ -92,7 +84,7 @@ export default function ProfilePage() {
         }
 
         fetchProfile()
-    }, [isInitializing, logout])
+    }, [isInitializing, apiFetch])
 
     // Reverse geocoding with debounce when coordinates change
     useEffect(() => {
@@ -203,13 +195,7 @@ export default function ProfilePage() {
         }
 
         try {
-            const endpoint_profile = `/api/user/profile`
-            const response = await fetch(endpoint_profile, {
-                method: 'PUT',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            const response = await apiFetch(api.user.updateProfile, {
                 body: JSON.stringify({
                     user: {
                         email: formData.email,

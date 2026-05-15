@@ -3,14 +3,16 @@ import { authenticateToken } from "../../middleware/auth"
 import unauthorized from "../../errorHttp/unauthorized"
 import db from "../../database/db"
 import internalServerError from "../../errorHttp/internalServerError"
+import {api} from "../../../frontend/src/api/routes"
 
 //*********************** Types ********************\\
 import { type AuthRequestType } from "../../../interfaces/AuthRequest.type"
 import { type UserProfileType } from "../../../interfaces/User.type"
 
 const profileGetRoute = Router()
+const profileGetApi = api.user.profile
 
-profileGetRoute.get("/user/profile", authenticateToken, async (req: AuthRequestType, res) => {
+profileGetRoute[profileGetApi.method](profileGetApi.path, authenticateToken, async (req: AuthRequestType, res) => {
     try {
         const userId = req.user?.id
 
