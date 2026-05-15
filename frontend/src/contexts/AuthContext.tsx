@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 
 import type { BaseUserType } from '../../../interfaces/User.type';
 import { type AuthContextType, type AuthProviderType } from '../../../interfaces/AuthContext.type';
-import {api, apiFetch} from "../api/routes"
+import { api } from "../api/routes"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -21,7 +21,7 @@ export const AuthProvider: React.FC<AuthProviderType> = ({ children }) => {
     useEffect(() => {
         const loadUser = async () => {
             try {
-                const response = await apiFetch(api.user.profile);
+                const response = await api.user.profile.fetch();
 
                 if (response.ok) {
                     const data = await response.json();

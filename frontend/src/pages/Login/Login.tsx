@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import './Login.css'
 import Navbar from '../../components/Navbar'
 import { useAuth } from '../../contexts/AuthContext'
-import { api, apiFetch } from "../../api/routes"
+import { api } from "../../api/routes"
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -40,7 +40,7 @@ export default function Login() {
         setLoading(true)
 
         try {
-            const response = await api.auth.login.fn(formData)
+            const response = await api.auth.login.fetch(formData)
             if (!response.ok) {
                 throw new Error('Login failed')
             }
@@ -66,7 +66,7 @@ export default function Login() {
     }
 
     const handleForgotPassword = async () => {
-        const response = await apiFetch(api.user.forgotPassword, { body: JSON.stringify({ email: formData.email }) })
+        const response = await api.user.forgotPassword.fetch({ email: formData.email })
 
         const data = await response.json()
         if (!response.ok) {

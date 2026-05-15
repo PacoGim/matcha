@@ -1,8 +1,8 @@
-import {api, apiFetch} from "../api/routes";
+import { api } from "../api/routes";
 
 export default async function handleLogout(logout: (message?: string) => void) {
     try {
-        await apiFetch(api.auth.logout)
+        await api.auth.logout.fetch()
     } catch (error) {
         console.error('Logout error:', error);
     } finally {

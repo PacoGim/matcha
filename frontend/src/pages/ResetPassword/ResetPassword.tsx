@@ -36,17 +36,12 @@ export default function ResetPassword() {
         }
 
         try {
-            let endpoint = api.user.forgotPassword //`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/password`;
-
+            let response
             if (token) {
-                endpoint = api.user.resetPassword // `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/reset-password`;
+                response = await api.user.forgotPassword.fetch({token, new_password:newPassword})
+            } else {
+                response = await api.user.changePassword.fetch({new_password:newPassword})
             }
-            const response = await apiFetch(endpoint, {
-                body: JSON.stringify({
-                    token,
-                    new_password: newPassword,
-                }),
-            });
 
             const data = await response.json();
 

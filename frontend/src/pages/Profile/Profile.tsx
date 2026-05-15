@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { validateName } from '../../validators/nameValidator'
 import type { UserProfileType } from '../../../../interfaces/User.type'
 import type { FieldErrorType } from '../../../../interfaces/FieldError.type'
-import { api, apiFetch } from '../../api/routes'
+import { api } from '../../api/routes'
 
 export default function ProfilePage() {
     const [userProfile, setUserProfile] = useState<UserProfileType | null>(null)
@@ -51,7 +51,7 @@ export default function ProfilePage() {
             }
 
             try {
-                const response = await apiFetch(api.user.profile)
+                const response = await api.user.profile.fetch()
 
                 const data: UserProfileType = await response.json()
 
@@ -84,7 +84,7 @@ export default function ProfilePage() {
         }
 
         fetchProfile()
-    }, [isInitializing, apiFetch])
+    }, [isInitializing])
 
     // Reverse geocoding with debounce when coordinates change
     useEffect(() => {
@@ -195,23 +195,21 @@ export default function ProfilePage() {
         }
 
         try {
-            const response = await apiFetch(api.user.updateProfile, {
-                body: JSON.stringify({
-                    user: {
-                        email: formData.email,
-                        first_name: formData.first_name,
-                        last_name: formData.last_name,
-                    },
-                    profile: {
-                        gender: formData.gender,
-                        sexual_preference: formData.sexual_preference,
-                        biography: formData.biography,
-                        location: formData.location,
-                        latitude: formData.latitude,
-                        longitude: formData.longitude,
-                        allow_gps: formData.allow_gps,
-                    }
-                }),
+            const response = await api.user.updateProfile.fetch({
+                user: {
+                    email: formData.email,
+                    first_name: formData.first_name,
+                    last_name: formData.last_name,
+                },
+                profile: {
+                    gender: formData.gender,
+                    sexual_preference: formData.sexual_preference,
+                    biography: formData.biography,
+                    location: formData.location,
+                    latitude: formData.latitude,
+                    longitude: formData.longitude,
+                    allow_gps: formData.allow_gps,
+                }
             })
 
             if ([401, 403].includes(response.status)) {

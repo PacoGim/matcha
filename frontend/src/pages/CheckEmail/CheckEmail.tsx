@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import './CheckEmail.css';
 import Navbar from '../../components/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
-import { api, apiFetch } from '../../api/routes';
+import { api } from '../../api/routes';
 
 export default function CheckEmail() {
     const [message, setMessage] = useState<string>('Verifying your email...');
@@ -25,7 +25,7 @@ export default function CheckEmail() {
             }
 
             try {
-                const response = await apiFetch(api.auth.checkMail, { body: JSON.stringify({ token }) });
+                const response = await api.auth.checkMail.fetch({ token: token });
                 if (response.ok === false) {
                     return logout("Token verification failed");
                 }
