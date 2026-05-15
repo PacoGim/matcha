@@ -13,7 +13,7 @@ export default function ProfileCard({
 
     return (
         <div className="profile-card">
-            <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${profile.id}/1`} alt={`Profile image of ${profile.username}`} />
+            <img src={`/api/images/${profile.id}/1`} alt={`Profile image of ${profile.username}`} />
             <div className='card-body'>
                 <span className='username'>{trimTextFn(username, 10)} ({age})</span>
                 <div className='controls'>

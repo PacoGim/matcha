@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { type Response, type NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import unauthorized from '../errorHttp/unauthorized';
 import forbidden from '../errorHttp/forbidden';

@@ -35,10 +35,10 @@ export default function ResetPassword() {
         }
 
         try {
-            let endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/password`;
+            let endpoint = `/api/user/password`;
 
             if (token) {
-                endpoint = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/reset-password`;
+                endpoint = `/api/user/reset-password`;
             }
             const response = await fetch(endpoint, {
                 method: 'POST',

@@ -1,7 +1,7 @@
 // Birthdate validation rules
 // This file is shared between frontend and backend
 
-import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
+import type { ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
 export function validateBirthdate(birthdate: unknown): ValidationErrorType | null {
     if (birthdate === undefined || birthdate === null) {

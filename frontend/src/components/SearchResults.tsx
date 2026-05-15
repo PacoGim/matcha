@@ -53,7 +53,7 @@ export default function SearchResults({
             onViewProfile={handleViewProfile}
           />
           // <div key={profile.id} className="profile-result-card">
-          //   <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${profile.id}/1`} alt={`Profile image of ${profile.username}`} />
+          //   <img src={`/api/images/${profile.id}/1`} alt={`Profile image of ${profile.username}`} />
           //   <div className="profile-overlay">
           //     <button className="like-button" onClick={() => onLike(profile.id)}>
           //       ♥

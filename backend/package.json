@@ -1,25 +1,16 @@
 {
-  "name": "42-matcha",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun --watch index.ts"
+  "name": "backend",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/express": "^5.0.6"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/PacoGim/matcha.git"
+  "peerDependencies": {
+    "typescript": "^5"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/PacoGim/matcha/issues"
-  },
-  "homepage": "https://github.com/PacoGim/matcha#readme",
   "dependencies": {
-    "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -28,13 +19,5 @@
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.7",
     "pg": "^8.20.0"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/nodemailer": "^8.0.0",
-    "@types/pg": "^8.20.0"
   }
 }

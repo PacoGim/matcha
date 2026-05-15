@@ -1,12 +1,15 @@
-import { useState } from 'react';
-import Navbar from '../../components/Navbar';
 // @ts-ignore
 import './Search.css';
+
+import { useState } from 'react';
+import Navbar from '../../components/Navbar';
 import SearchResults from '../../components/SearchResults';
 import { fetchNearbyUsers } from '../../services/userService';
-import { UserProfileType } from '../../../../interfaces/User.type';
-import { SearchFiltersStateType } from '../../../../interfaces/SearchFiltersState.type';
 import SearchFilters from '../../components/SearchFilters';
+
+//*********************** Types ********************\\
+import type { SearchFiltersStateType } from '../../../../interfaces/SearchFiltersState.type';
+import type { UserProfileType } from '../../../../interfaces/User.type';
 
 
 export default function Search() {

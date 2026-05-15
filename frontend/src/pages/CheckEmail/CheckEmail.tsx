@@ -24,7 +24,7 @@ export default function CheckEmail() {
             }
 
             try {
-                const endpoint_check_email = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/check-email-token`
+                const endpoint_check_email = `/api/user/check-email-token`
                 const response = await fetch(endpoint_check_email, {
                     method: 'POST',
                     headers: {

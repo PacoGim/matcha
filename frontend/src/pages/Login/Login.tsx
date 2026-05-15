@@ -39,7 +39,7 @@ export default function Login() {
         setLoading(true)
 
         try {
-            const endpoint_login = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/login`
+            const endpoint_login = `/api/user/login`
 
             const response = await fetch(endpoint_login, {
                 method: 'POST',
@@ -78,7 +78,7 @@ export default function Login() {
     }
 
     const handleForgotPassword = async () => {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/forgot-password`, {
+        const response = await fetch(`/api/user/forgot-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -1,4 +1,4 @@
-import { ProfileType } from "./Profile.type";
+import type { ProfileType } from "./Profile.type";
 
 export interface BaseUserType {
     id: string;

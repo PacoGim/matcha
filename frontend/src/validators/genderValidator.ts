@@ -3,7 +3,7 @@
 
 import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
-export const GENDER_VALUES = ['male', 'female', 'other', 'null'] as const
+export const GENDER_VALUES = ['male', 'female', 'other'] as const
 
 export function validateGender(gender: unknown): ValidationErrorType | null {
     if (gender === undefined || gender === null) {

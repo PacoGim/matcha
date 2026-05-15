@@ -34,7 +34,7 @@ checkMailTokenRoute.post("/user/check-email-token", async (req, res) => {
             )
             await db.getPool().query(
                 "INSERT INTO profiles (user_id, gender) VALUES ($1, $2);",
-                [user_id, 'null']
+                [user_id, null]
             )
         }
         await db.getPool().query(

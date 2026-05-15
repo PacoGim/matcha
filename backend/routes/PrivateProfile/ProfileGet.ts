@@ -1,10 +1,12 @@
 import e, { Router } from "express"
-import { AuthRequestType } from "../../../interfaces/AuthRequest.type"
 import { authenticateToken } from "../../middleware/auth"
 import unauthorized from "../../errorHttp/unauthorized"
 import db from "../../database/db"
-import { UserProfileType } from "../../../interfaces/User.type"
 import internalServerError from "../../errorHttp/internalServerError"
+
+//*********************** Types ********************\\
+import { type AuthRequestType } from "../../../interfaces/AuthRequest.type"
+import { type UserProfileType } from "../../../interfaces/User.type"
 
 const profileGetRoute = Router()
 

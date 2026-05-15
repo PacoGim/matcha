@@ -6,8 +6,10 @@ import Navbar from '../../components/Navbar'
 import LocationPicker from '../../components/LocationPicker'
 import { useAuth } from '../../contexts/AuthContext'
 import { validateName } from '../../validators/nameValidator'
-import { UserProfileType } from '../../../../interfaces/User.type'
-import { FieldErrorType } from '../../../../interfaces/FieldError.type'
+
+//*********************** Types ********************\\
+import type { UserProfileType } from '../../../../interfaces/User.type'
+import type { FieldErrorType } from '../../../../interfaces/FieldError.type'
 
 export default function ProfilePage() {
     const [userProfile, setUserProfile] = useState<UserProfileType | null>(null)
@@ -50,7 +52,7 @@ export default function ProfilePage() {
             }
 
             try {
-                const endpoint_profile = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/profile`
+                const endpoint_profile = `/api/user/profile`
                 const response = await fetch(endpoint_profile, {
                     method: 'GET',
                     credentials: 'include',
@@ -201,7 +203,7 @@ export default function ProfilePage() {
         }
 
         try {
-            const endpoint_profile = `${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/user/profile`
+            const endpoint_profile = `/api/user/profile`
             const response = await fetch(endpoint_profile, {
                 method: 'PUT',
                 credentials: 'include',
@@ -381,7 +383,7 @@ export default function ProfilePage() {
                     <div className="profile-content">
                         {!isEditing ? (
                             <>
-                                <img src={`${process.env.REACT_APP_BACKEND_ORIGIN || window.location.origin}/images/${userProfile.id}/1`} alt="Profile" />
+                                <img src={`/api/images/${userProfile.id}/1`} alt="Profile" />
                                 <div className="two-pane-grid">
                                     {/* User Data Pane */}
                                     <div className="pane user-pane">

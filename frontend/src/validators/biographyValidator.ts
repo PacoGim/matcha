@@ -1,7 +1,7 @@
 // Biography validation rules
 // This file is shared between frontend and backend
 
-import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
+import type { ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
 export const BIOGRAPHY_RULES = {
     MAX_LENGTH: 100,

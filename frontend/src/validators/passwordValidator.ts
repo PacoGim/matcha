@@ -1,7 +1,7 @@
 // Password validation rules
 // This file is shared between frontend and backend
 
-import { ValidationErrorType } from "../../../interfaces/ValidationError.type"
+import { type ValidationErrorType } from "../../../interfaces/ValidationError.type"
 
 // Common dictionary words to avoid (case insensitive)
 const COMMON_DICTIONARY_WORDS = [
@@ -26,7 +26,7 @@ const COMMON_DICTIONARY_WORDS = [
     'ninja123', 'computer123', 'shadow123', 'internet123', 'whatever123',
     'nothing123', 'batman123', 'pokemon123', 'killer123', 'pepper1234',
     'zaqwsx123', 'qwertyuiop123', 'asdfghjkl123', 'zxcvbnm123', 'qazwsx123'
-];
+]
 
 export const PASSWORD_RULES = {
     MIN_LENGTH: 8,
@@ -35,65 +35,65 @@ export const PASSWORD_RULES = {
     REQUIRE_DIGIT: true,
     REQUIRE_SPECIAL: true,
     FORBIDDEN_WORDS: COMMON_DICTIONARY_WORDS,
-};
+}
 
 export function validatePassword(password: string): ValidationErrorType | null {
     if (!password || password.trim() === '') {
         return {
             field: 'password',
             message: 'Password is required',
-        };
+        }
     }
 
     if (password.length < PASSWORD_RULES.MIN_LENGTH) {
         return {
             field: 'password',
             message: `Password must be at least ${PASSWORD_RULES.MIN_LENGTH} characters long`,
-        };
+        }
     }
 
     if (PASSWORD_RULES.REQUIRE_UPPERCASE && !/[A-Z]/.test(password)) {
         return {
             field: 'password',
             message: 'Password must contain at least one uppercase letter',
-        };
+        }
     }
 
     if (PASSWORD_RULES.REQUIRE_LOWERCASE && !/[a-z]/.test(password)) {
         return {
             field: 'password',
             message: 'Password must contain at least one lowercase letter',
-        };
+        }
     }
 
     if (PASSWORD_RULES.REQUIRE_DIGIT && !/\d/.test(password)) {
         return {
             field: 'password',
             message: 'Password must contain at least one digit',
-        };
+        }
     }
 
     if (PASSWORD_RULES.REQUIRE_SPECIAL && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
         return {
             field: 'password',
             message: 'Password must contain at least one special character',
-        };
+        }
     }
 
     // Check for common dictionary words
-    const lowerPassword = password.toLowerCase();
+    const lowerPassword = password.toLowerCase()
     for (const word of PASSWORD_RULES.FORBIDDEN_WORDS) {
         if (lowerPassword.includes(word)) {
             return {
                 field: 'password',
                 message: 'Password contains common dictionary words and is not secure enough',
-            };
+            }
         }
     }
 
-    return null;
+    return null
 }
 
 export function getValidationRulesDescription(): string {
-    return `Password must be at least ${PASSWORD_RULES.MIN_LENGTH} characters with uppercase, lowercase, digit, and special character. Common dictionary words are not allowed.`;
+    return `Password must be at least ${PASSWORD_RULES.MIN_LENGTH} characters with uppercase, lowercase, digit, and special character. Common dictionary words are not allowed.`
 }

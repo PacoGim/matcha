@@ -1,29 +1,15 @@
 {
-  "name": "42-matcha",
-  "version": "1.0.0",
-  "private": true,
-  "description": "[subject](https://cdn.intra.42.fr/pdf/pdf/199874/en.subject.pdf)",
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
   "scripts": {
-    "dev": "concurrently \"npm --workspace backend run dev\" \"bash -lc 'set -a && source .env && set +a && npm --workspace frontend run start'\"",
-    "backend": "npm --workspace backend run dev",
-    "frontend": "npm --workspace frontend run start"
+    "backend": "cd backend && bun --watch index.ts",
+    "frontend": "cd frontend && bun run dev",
+    "dev": "concurrently \"bun run backend\" \"bun run frontend\""
+  },
+  "dependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/jsonwebtoken": "^9.0.10"
   },
   "devDependencies": {
-    "concurrently": "^9.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/PacoGim/matcha.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/PacoGim/matcha/issues"
-  },
-  "homepage": "https://github.com/PacoGim/matcha#readme"
+    "concurrently": "^9.2.1"
+  }
 }
